@@ -33,7 +33,7 @@ def load_results_from_csv(path: str) -> List[RaceResult]:
                 cell = cell.strip()
                 if cell == "":
                     continue
-                score = int(cell)
+                score = float(cell)
                 results.append(
                     RaceResult(
                         athlete_name=athlete_name,

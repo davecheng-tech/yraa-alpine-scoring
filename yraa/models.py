@@ -6,11 +6,11 @@ from typing import List
 class RaceResult:
     athlete_name: str
     school: str
-    score: int
+    score: float
 
 
 @dataclass
 class TeamScore:
     school: str
-    total_points: int
-    contributing_scores: List[int]
+    total_points: float
+    contributing_scores: List[float]

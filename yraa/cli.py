@@ -15,7 +15,9 @@ def main():
     teams = calculate_team_scores(results)
 
     for i, team in enumerate(teams, start=1):
-        print(f"{i}. {team.school} — {team.total_points}")
+        pts = team.total_points
+        pts_str = f"{pts:g}"
+        print(f"{i}. {team.school} — {pts_str}")
 
 
 if __name__ == "__main__":
