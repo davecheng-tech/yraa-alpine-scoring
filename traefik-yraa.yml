@@ -1,0 +1,13 @@
+http:
+  routers:
+    yraa:
+      rule: Host(`yraa.davecheng.com`)
+      entryPoints: [websecure]
+      tls:
+        certResolver: le
+      service: yraa
+  services:
+    yraa:
+      loadBalancer:
+        servers:
+          - url: http://172.16.1.11:8822
