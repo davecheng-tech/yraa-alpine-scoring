@@ -1,101 +1,172 @@
-# YRAA Alpine Ski & Snowboard Championship Scoring Engine
+# YRAA Alpine Ski & Snowboard Championship Scoring
 
-## Purpose
+A scoring engine and web dashboard for the YRAA Alpine Ski & Snowboard Team Championships. Ingests raw race result CSVs, calculates championship points from place finishes, stores everything in SQLite, and serves team and individual leaderboards via a read-only web dashboard.
 
-This project implements the official YRAA Alpine Ski & Snowboard Team Championship scoring logic as [defined](http://yraa.com/documents/playingregs/AlpineSkiingRegs.pdf) in Regulation 4.d.ii (a–c).
+Implements scoring logic from [YRAA Regulation 4.d.ii (a–c)](http://yraa.com/documents/playingregs/AlpineSkiingRegs.pdf).
 
-The objective is to replace complex spreadsheet-based logic with a deterministic, testable scoring engine that can later evolve into a web-based system.
+## Quick Start
 
-This engine assumes that race points have already been calculated according to individual scoring regulations. It does not calculate race times, convert times to points, or apply individual championship tie-breaking rules. It operates strictly on precomputed point totals.
+### Prerequisites
 
-## Championship Structure
+- Python 3.9+
+- pip
 
-There are four categories:
+### Install dependencies
 
-- Girls Ski
-- Boys Ski
-- Girls Snowboard
-- Boys Snowboard
+```
+pip install -r requirements.txt
+```
 
-Each category may contain two divisions (High School and Open). For team scoring purposes, divisions are combined — there is one overall team champion per category.
+### Ingest race results
 
-## Team Scoring Rules (Regulation 4.d.ii a–c)
+Place raw race result CSVs in `data/raw/`, then ingest:
 
-For each team (school):
+```
+# Ingest all CSVs in a directory
+python3 -m yraa.ingest --dir data/raw/
 
-1. The best 12 scores from eligible racers are used.
-2. Scores may come from either division (HS or OPEN).
-3. A maximum of 4 scores per racer may be used.
-4. A score of zero may only be counted if that racer has at least one score ≥ 1 during the season.
+# Ingest a single file
+python3 -m yraa.ingest --file data/raw/20260212-1-boys_ski_results.csv
 
-Teams are ranked by total points in descending order.
+# Skip confirmation prompt
+python3 -m yraa.ingest --dir data/raw/ --yes
 
-Notes:
+# Use a custom database path
+python3 -m yraa.ingest --dir data/raw/ --db /path/to/yraa.db
+```
 
-- Regulation 4.d.ii.d (minimum GS/SL requirement) is currently not applied.
-- Regulation 4.d.ii.e (separate HS and Open team titles if both have ≥5 teams) is extremely rare and not implemented.
+The ingest command will show a preview of what will be imported (result counts, top scorers, race numbers) and prompt for confirmation before writing to the database.
 
-## Usage
+Race numbers are assigned sequentially as files are ingested — the number in the filename (e.g., `-1-` or `-2-`) is for human reference only.
 
-Each CSV file represents a single category (e.g., Girls Ski). Run the CLI with:
+### Start the web dashboard
+
+```
+uvicorn yraa.web:app --host 0.0.0.0 --port 8000
+```
+
+Set `YRAA_DB_PATH` to change the database location (default: `data/yraa.db`).
+
+### Legacy CLI
+
+The original CLI for pre-computed championship point CSVs still works:
 
 ```
 python3 -m yraa.cli --input data/sample_girls_ski.csv
 ```
 
-Output is a ranked list of teams:
+## Docker Deployment
+
+Build and run with Docker Compose. The compose file is configured for Traefik reverse proxy at `yraa.davecheng.com`.
 
 ```
-1. King City — 308
-2. Markville — 294
-3. Newmarket — 292
+docker compose up -d
+```
+
+Ingest data from within the container:
+
+```
+docker exec yraa python3 -m yraa.ingest --dir /app/data/raw/
+```
+
+The `data/` directory is volume-mounted, so place raw CSVs in `data/raw/` on the host and they'll be available inside the container. The SQLite database is stored at `data/yraa.db`.
+
+## Scoring Rules
+
+### Points Tables
+
+**High School Division** — top 30 score points:
+
+| Place | Pts | Place | Pts | Place | Pts | Place | Pts | Place | Pts |
+|-------|-----|-------|-----|-------|-----|-------|-----|-------|-----|
+| 1st | 50 | 7th | 26 | 13th | 18 | 19th | 12 | 25th | 6 |
+| 2nd | 40 | 8th | 24 | 14th | 17 | 20th | 11 | 26th | 5 |
+| 3rd | 35 | 9th | 22 | 15th | 16 | 21st | 10 | 27th | 4 |
+| 4th | 32 | 10th | 21 | 16th | 15 | 22nd | 9 | 28th | 3 |
+| 5th | 30 | 11th | 20 | 17th | 14 | 23rd | 8 | 29th | 2 |
+| 6th | 28 | 12th | 19 | 18th | 13 | 24th | 7 | 30th | 1 |
+
+**Open Division** — top 15 score points:
+
+| Place | Pts | Place | Pts | Place | Pts | Place | Pts | Place | Pts |
+|-------|-----|-------|-----|-------|-----|-------|-----|-------|-----|
+| 1st | 25 | 4th | 16 | 7th | 10 | 10th | 6 | 13th | 3 |
+| 2nd | 20 | 5th | 14 | 8th | 8 | 11th | 5 | 14th | 2 |
+| 3rd | 18 | 6th | 12 | 9th | 7 | 12th | 4 | 15th | 1 |
+
+### Team Scoring (Regulation 4.d.ii a–c)
+
+For each team (school), within each category (e.g., Girls Ski):
+
+1. Best 12 scores from eligible racers are used
+2. Scores from either division (HS or Open) are combined
+3. Maximum 4 scores per racer
+4. Zero scores only counted if the racer has at least one non-zero score
+
+### Individual Scoring
+
+Per athlete within a gender/sport/division:
+
+- Sum of top 3 race results if 5 or fewer races have occurred
+- Sum of top 4 race results if 6 or more races have occurred
+
+### Leaderboards
+
+12 leaderboards total:
+
+- **4 team**: girls ski, boys ski, girls snowboard, boys snowboard (Open + HS combined)
+- **8 individual**: girls/boys × ski/snowboard × open/hs
+
+### Disqualification
+
+A result is skipped if any of:
+- Notes column contains DNS, DNF, DQ, or DSQ as a substring (case-insensitive)
+- Time is ≥ 998
+- Place is empty with no valid time
+
+## Raw CSV Format
+
+Raw race result CSVs (from the scorekeeper) follow this structure:
+
+```
+"BOYS SKI [Thurs. Feb. 12, 2026 @ Beaver Valley]",,,,,,,,
+Place,Colour,#,First Name,Last Name,School,Racing Category,Run #1,Notes
+1,Orange,7,Finley,Hankai,Denison,SKI (Boys):  Open Div,21.81,
+...
+[blank row]
+Place,Colour,#,First Name,Last Name,School,Racing Category,Run #1,Notes
+1,Orange,116,Thomas,OMeara,Cardinal Carter,SKI (Boys):  High School Div,24.66,
 ...
 ```
 
-### CSV Input Format
+Filename convention: `YYYYMMDD-N-gender_sport_results.csv` (e.g., `20260212-1-boys_ski_results.csv`). The date is extracted from the filename for the event record.
 
-CSV files have no header row. Each row contains an athlete's first name, last name, school, and their scores across all races in the season:
+### Parsing Edge Cases
 
-```
-first_name,last_name,school,score1,score2,score3,...
-```
-
-For example:
-
-```
-Amelia,Chan,Bill Crothers,50,50,50,50,40,32,0,16
-Tracy,Zheng,Markville,40,50,40,40,35,35,50,50
-```
-
-- The number of score columns can vary (typically 8, but may be 4–12+).
-- Blank lines are ignored (these often separate HS and Open divisions in the source spreadsheet).
-- Rows with no first or last name are ignored.
-- If an athlete appears in multiple rows (e.g., once in HS and once in Open), their scores are merged.
-
-### Sample Data
-
-The `data/` directory contains four sample datasets from a previous season:
-
-- `sample_girls_ski.csv`
-- `sample_boys_ski.csv`
-- `sample_girls_snowboard.csv`
-- `sample_boys_snowboard.csv`
+- Section order is not guaranteed (could be HS first, then Open)
+- Second section header row may be missing (e.g., girls snowboard)
+- Some categories may have no Open division (e.g., boys snowboard)
+- Tied places get the same place number and same points
+- Names with parenthetical nicknames kept as-is: "Alexander (Sasha)"
+- Trailing whitespace on school names is stripped
 
 ## Project Structure
 
 ```
 yraa/
-    models.py    — data classes (RaceResult, TeamScore)
-    scoring.py   — team scoring algorithm
-    io.py        — CSV parsing
-    cli.py       — command-line interface
+    cli.py         — legacy CLI for pre-computed CSVs
+    scoring.py     — team scoring algorithm (Regulation 4.d.ii a–c)
+    models.py      — data classes (RaceResult, TeamScore)
+    io.py          — legacy CSV parsing
+    points.py      — place-to-points lookup tables
+    parser.py      — raw race result CSV parser
+    db.py          — SQLite schema, inserts, leaderboard queries
+    ingest.py      — CLI for ingesting raw CSVs into the database
+    web.py         — FastAPI web dashboard
+    templates/     — Jinja2 HTML templates
 
-data/            — sample CSV datasets
+data/
+    raw/           — raw race result CSVs from scorekeeper
+    yraa.db        — SQLite database (generated, gitignored)
+    sample_*.csv   — sample pre-computed datasets for legacy CLI
 ```
-
-## Roadmap
-
-- [ ] Unit tests
-- [ ] Season persistence with database
-- [ ] Multi-race uploads
-- [ ] Web interface (FastAPI) with CSV upload and live leaderboard

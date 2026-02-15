@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}{{ label }} Individual Leaderboard — YRAA{% endblock %}
+
+{% block content %}
+<h2>{{ label }} — Individual Leaderboard</h2>
+
+{% if athletes %}
+<table>
+    <thead>
+        <tr>
+            <th class="rank">#</th>
+            <th>Athlete</th>
+            <th>School</th>
+            <th class="points">Points</th>
+            <th>Races</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in athletes %}
+        <tr>
+            <td class="rank">{{ loop.index }}</td>
+            <td>{{ a.first_name }} {{ a.last_name }}</td>
+            <td>{{ a.school }}</td>
+            <td class="points">{{ a.total_points }}</td>
+            <td>{{ a.race_count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No results yet for this category.</p>
+{% endif %}
+{% endblock %}

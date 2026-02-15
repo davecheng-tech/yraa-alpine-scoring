@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}YRAA Alpine Scoring — Home{% endblock %}
+
+{% block content %}
+<h2>Season Summary</h2>
+
+{% if summary.result_count > 0 %}
+<table>
+    <tbody>
+        <tr><td>Events</td><td>{{ summary.event_count }}</td></tr>
+        <tr><td>Races ingested</td><td>{{ summary.race_count }}</td></tr>
+        <tr><td>Total results</td><td>{{ summary.result_count }}</td></tr>
+        <tr><td>Last event</td><td>{{ summary.last_event_date }}</td></tr>
+    </tbody>
+</table>
+
+<h3>Team Leaderboards</h3>
+<div class="grid">
+    {% for c in categories %}
+    <a href="/team/{{ c.gender }}/{{ c.sport }}" role="button" class="outline">{{ c.gender|title }} {{ c.sport|title }}</a>
+    {% endfor %}
+</div>
+
+<h3>Individual Leaderboards</h3>
+<div class="grid">
+    {% for c in categories %}
+    {% for div in ['open', 'hs'] %}
+    <a href="/individual/{{ c.gender }}/{{ c.sport }}/{{ div }}" role="button" class="outline secondary">{{ c.gender|title }} {{ c.sport|title }} {{ 'Open' if div == 'open' else 'HS' }}</a>
+    {% endfor %}
+    {% endfor %}
+</div>
+{% else %}
+<p>No race data has been ingested yet. Use the CLI to ingest race results:</p>
+<pre><code>python3 -m yraa.ingest --file data/raw/&lt;file&gt;.csv</code></pre>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}{{ label }} Team Leaderboard — YRAA{% endblock %}
+
+{% block content %}
+<h2>{{ label }} — Team Leaderboard</h2>
+
+{% if teams %}
+<table>
+    <thead>
+        <tr>
+            <th class="rank">#</th>
+            <th>School</th>
+            <th class="points">Points</th>
+            <th>Contributing Scores</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for team in teams %}
+        <tr>
+            <td class="rank">{{ loop.index }}</td>
+            <td>{{ team.school }}</td>
+            <td class="points">{{ '%g' % team.total_points }}</td>
+            <td>{{ team.contributing_scores | map('int') | join(', ') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No results yet for this category.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,21 @@
+services:
+  yraa:
+    build: .
+    container_name: yraa
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
+    environment:
+      - YRAA_DB_PATH=/app/data/yraa.db
+    labels:
+      traefik.enable: true
+      traefik.http.routers.yraa.rule: "Host(`yraa.davecheng.com`)"
+      traefik.http.routers.yraa.entrypoints: websecure
+      traefik.http.routers.yraa.tls: true
+      traefik.http.routers.yraa.tls.certresolver: le
+      traefik.http.services.yraa.loadbalancer.server.port: "8000"
+
+networks:
+  default:
+    external: true
+    name: web

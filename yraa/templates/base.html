@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}YRAA Alpine Scoring{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        nav { padding: 0.5rem 0; }
+        nav ul { margin: 0; padding: 0; }
+        .nav-section { margin-bottom: 0.25rem; }
+        .nav-section summary { font-weight: 600; font-size: 0.9rem; cursor: pointer; }
+        .nav-links { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; padding: 0.25rem 0 0.25rem 1rem; }
+        .nav-links a { font-size: 0.85rem; }
+        table { margin-top: 1rem; }
+        .rank { width: 3rem; text-align: center; }
+        .points { text-align: right; }
+        h1 { margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <nav>
+            <h1><a href="/" style="text-decoration: none; color: inherit;">YRAA Alpine Scoring</a></h1>
+            <details class="nav-section" open>
+                <summary>Team Leaderboards</summary>
+                <div class="nav-links">
+                    {% for c in categories %}
+                    <a href="/team/{{ c.gender }}/{{ c.sport }}">{{ c.gender|title }} {{ c.sport|title }}</a>
+                    {% endfor %}
+                </div>
+            </details>
+            <details class="nav-section" open>
+                <summary>Individual Leaderboards</summary>
+                <div class="nav-links">
+                    {% for c in categories %}
+                    {% for div in ['open', 'hs'] %}
+                    <a href="/individual/{{ c.gender }}/{{ c.sport }}/{{ div }}">{{ c.gender|title }} {{ c.sport|title }} {{ 'Open' if div == 'open' else 'HS' }}</a>
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+            </details>
+        </nav>
+        <hr>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
