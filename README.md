@@ -6,15 +6,7 @@ This project implements the official YRAA Alpine Ski & Snowboard Team Championsh
 
 The objective is to replace complex spreadsheet-based logic with a deterministic, testable scoring engine that can later evolve into a web-based system.
 
-Initial Version:
-- CLI-only
-- CSV input
-- Ranked team output to terminal
-
-Future Versions:
-- Persistent database (SQLite or PostgreSQL)
-- Web interface for race conveners
-- Automated point assignment from race times
+This engine assumes that race points have already been calculated according to individual scoring regulations. It does not calculate race times, convert times to points, or apply individual championship tie-breaking rules. It operates strictly on precomputed point totals.
 
 ## Championship Structure
 
@@ -25,15 +17,7 @@ There are four categories:
 - Girls Snowboard
 - Boys Snowboard
 
-Each category may contain two divisions:
-
-- High School Division (HS)
-- Open Division (OPEN)
-
-For team scoring purposes:
-
-- Open and High School divisions are combined.
-- There is one overall Girls team champion and one overall Boys team champion.
+Each category may contain two divisions (High School and Open). For team scoring purposes, divisions are combined — there is one overall team champion per category.
 
 ## Team Scoring Rules (Regulation 4.d.ii a–c)
 
@@ -42,112 +26,76 @@ For each team (school):
 1. The best 12 scores from eligible racers are used.
 2. Scores may come from either division (HS or OPEN).
 3. A maximum of 4 scores per racer may be used.
-4. A score of zero may only be counted if that racer has at least one score greater than or equal to 1 during the season.
+4. A score of zero may only be counted if that racer has at least one score ≥ 1 during the season.
+
+Teams are ranked by total points in descending order.
 
 Notes:
 
 - Regulation 4.d.ii.d (minimum GS/SL requirement) is currently not applied.
-- Regulation 4.d.ii.e (separate HS and Open team titles if both have ≥5 teams) is extremely rare and not implemented in Phase 1.
+- Regulation 4.d.ii.e (separate HS and Open team titles if both have ≥5 teams) is extremely rare and not implemented.
 
-## Data Model Assumptions
+## Usage
 
-Each race result record must include:
+Each CSV file represents a single category (e.g., Girls Ski). Run the CLI with:
 
-- athlete_name
-- school
-- gender ("girls" or "boys")
-- sport ("ski" or "snowboard")
-- division ("HS" or "OPEN")
-- race_id
-- score (integer ≥ 0)
+```
+python3 -m yraa.cli --input data/sample_girls_ski.csv
+```
 
-This engine assumes that race points have already been calculated according to individual scoring regulations.
+Output is a ranked list of teams:
 
-This engine does NOT:
+```
+1. King City — 308
+2. Markville — 294
+3. Newmarket — 292
+...
+```
 
-- Calculate race times
-- Convert times to points
-- Apply individual championship tie-breaking rules
+### CSV Input Format
 
-It operates strictly on precomputed point totals.
+CSV files have no header row. Each row contains an athlete's first name, last name, school, and their scores across all races in the season:
 
-## Team Scoring Algorithm
+```
+first_name,last_name,school,score1,score2,score3,...
+```
 
-For each team:
+For example:
 
-1. Group all race results by athlete.
-2. Remove athletes whose scores are all zero.
-3. For remaining athletes:
-   - Sort their scores in descending order.
-   - Keep at most the top 4 scores.
-4. Combine all eligible scores across athletes.
-5. Sort combined scores in descending order.
-6. Select the top 12 scores.
-7. Sum those 12 scores to produce the team total.
-8. Rank teams by total points in descending order.
+```
+Amelia,Chan,Bill Crothers,50,50,50,50,40,32,0,16
+Tracy,Zheng,Markville,40,50,40,40,35,35,50,50
+```
 
-This represents a constrained selection problem:
+- The number of score columns can vary (typically 8, but may be 4–12+).
+- Blank lines are ignored (these often separate HS and Open divisions in the source spreadsheet).
+- Rows with no first or last name are ignored.
+- If an athlete appears in multiple rows (e.g., once in HS and once in Open), their scores are merged.
 
-- Maximum 12 scores per team.
-- Maximum 4 scores per athlete.
-- Conditional inclusion of zero scores.
+### Sample Data
+
+The `data/` directory contains four sample datasets from a previous season:
+
+- `sample_girls_ski.csv`
+- `sample_boys_ski.csv`
+- `sample_girls_snowboard.csv`
+- `sample_boys_snowboard.csv`
 
 ## Project Structure
 
 ```
 yraa/
-    models.py
-    scoring.py
-    io.py
-    cli.py
+    models.py    — data classes (RaceResult, TeamScore)
+    scoring.py   — team scoring algorithm
+    io.py        — CSV parsing
+    cli.py       — command-line interface
 
-tests/
+data/            — sample CSV datasets
 ```
-
-Separation of concerns:
-
-- `models.py` — domain objects and enums
-- `scoring.py` — championship logic
-- `io.py` — CSV parsing
-- `cli.py` — command-line interface
-
-## CLI Usage (Phase 1)
-
-Example:
-
-```
-python -m yraa.cli --input results.csv --gender girls --sport ski
-```
-
-This will:
-
-- Load the CSV file
-- Filter by gender and sport
-- Compute team scores
-- Print ranked standings
-
-## Engineering Principles
-
-- Scoring logic must remain independent of IO.
-- Constants (e.g., max team scores, max per racer) must not be hardcoded in multiple locations.
-- The scoring engine should remain reusable for:
-  - CLI execution
-  - Scheduled jobs
-  - Future web API endpoints
 
 ## Roadmap
 
-Phase 1:
-- Deterministic CLI scoring
-- Unit tests
-
-Phase 2:
-- Season persistence with database
-- Multi-race uploads
-
-Phase 3:
-- FastAPI web wrapper
-- CSV upload endpoints
-- Live leaderboard dashboard
-
-This repository represents the authoritative implementation of YRAA Team Championship scoring logic going forward.
+- [ ] Unit tests
+- [ ] Season persistence with database
+- [ ] Multi-race uploads
+- [ ] Web interface (FastAPI) with CSV upload and live leaderboard
