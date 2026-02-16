@@ -8,7 +8,7 @@ MAX_SCORES_PER_RACER = 4
 
 def calculate_team_scores(results: List[RaceResult]) -> List[TeamScore]:
     """
-    Implements YRAA team scoring rules (4.d.ii a–c).
+    Implements YRAA team scoring rules (Regulation 4.d.ii).
     """
 
     # Group results by school

@@ -2,7 +2,7 @@
 
 A scoring engine and web dashboard for the YRAA Alpine Ski & Snowboard Team Championships. Ingests raw race result CSVs, calculates championship points from place finishes, stores everything in SQLite, and serves team and individual leaderboards via a read-only web dashboard.
 
-Implements scoring logic from [YRAA Regulation 4.d.ii (a–c)](http://yraa.com/documents/playingregs/AlpineSkiingRegs.pdf).
+Implements scoring logic from YRAA Alpine Skiing Playing Regulations, sections 4.c–d.
 
 ## Quick Start
 
@@ -94,7 +94,7 @@ The `data/` directory is volume-mounted, so place raw CSVs in `data/raw/` on the
 | 2nd | 20 | 5th | 14 | 8th | 8 | 11th | 5 | 14th | 2 |
 | 3rd | 18 | 6th | 12 | 9th | 7 | 12th | 4 | 15th | 1 |
 
-### Team Scoring (Regulation 4.d.ii a–c)
+### Team Scoring (Regulation 4.d.ii)
 
 For each team (school), within each category (e.g., Girls Ski):
 
@@ -169,7 +169,7 @@ Filename convention: `YYYYMMDD-N-gender_sport_results.csv` (e.g., `20260212-1-bo
 ```
 yraa/
     cli.py         — legacy CLI for pre-computed CSVs
-    scoring.py     — team scoring algorithm (Regulation 4.d.ii a–c)
+    scoring.py     — team scoring algorithm (Regulation 4.d.ii)
     models.py      — data classes (RaceResult, TeamScore)
     io.py          — legacy CSV parsing
     points.py      — place-to-points lookup tables

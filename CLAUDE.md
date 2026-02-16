@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-YRAA Alpine Ski & Snowboard Championship Scoring — a Python scoring engine and web dashboard that ingests raw race result CSVs, calculates championship points per YRAA Regulation 4.d.ii, stores data in SQLite, and serves team/individual leaderboards via FastAPI.
+YRAA Alpine Ski & Snowboard Championship Scoring — a Python scoring engine and web dashboard that ingests raw race result CSVs, calculates championship points per YRAA Regulation 4.c–d, stores data in SQLite, and serves team/individual leaderboards via FastAPI.
 
 ## Commands
 
@@ -57,7 +57,6 @@ Key modules in `yraa/`:
 - `data/samples/` — Sample CSVs for testing (gitignored, local-only)
 - `data/raw/` — Production race CSVs (gitignored, local-only)
 - `data/yraa.db` — SQLite database (gitignored, regenerated on ingest)
-- `data/alpine_skiing_regulations.pdf` — Reference document (in git)
 
 ## Deployment
 
