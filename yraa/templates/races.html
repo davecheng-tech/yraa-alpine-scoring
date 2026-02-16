@@ -40,6 +40,27 @@
     </label>
 </div>
 
+<div class="grid">
+    <label>
+        School
+        <select id="filter-school">
+            <option value="">All Schools</option>
+            {% for s in schools %}
+            <option value="{{ s }}"{% if s == selected_school %} selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>
+        Athlete
+        <select id="filter-athlete">
+            <option value="">All Athletes</option>
+            {% for a in athletes_list %}
+            <option value="{{ a }}"{% if a == selected_athlete %} selected{% endif %}>{{ a }}</option>
+            {% endfor %}
+        </select>
+    </label>
+</div>
+
 {% if results %}
 {% if event_date %}
 <p><small>{{ selected_group|title }} {{ selected_sport|title }} — {{ selected_division|upper }} Division — Race {{ selected_race }} ({{ event_date }})</small></p>
@@ -71,23 +92,45 @@
 {% endif %}
 
 <script>
-    function updateFilters() {
-        var group = document.getElementById('filter-group').value;
-        var sport = document.getElementById('filter-sport').value;
-        var division = document.getElementById('filter-division').value;
-        var race = document.getElementById('filter-race').value;
-        window.location.href = '/races?group=' + group + '&sport=' + sport + '&division=' + division + '&race=' + race;
+    function buildUrl(overrides) {
+        var params = {
+            group: document.getElementById('filter-group').value,
+            sport: document.getElementById('filter-sport').value,
+            division: document.getElementById('filter-division').value,
+            race: document.getElementById('filter-race').value,
+            school: document.getElementById('filter-school').value,
+            athlete: document.getElementById('filter-athlete').value
+        };
+        Object.assign(params, overrides || {});
+        var parts = [];
+        for (var key in params) {
+            if (params[key]) parts.push(key + '=' + encodeURIComponent(params[key]));
+        }
+        return '/races?' + parts.join('&');
     }
-    document.getElementById('filter-group').addEventListener('change', updateFilters);
-    document.getElementById('filter-sport').addEventListener('change', updateFilters);
-    document.getElementById('filter-division').addEventListener('change', updateFilters);
+    function updateFilters() {
+        window.location.href = buildUrl();
+    }
+    function onCategoryChange() {
+        // Reset school/athlete when category changes
+        window.location.href = buildUrl({school: '', athlete: ''});
+    }
+    function onSchoolChange() {
+        // Reset athlete when school changes (athlete list depends on school)
+        window.location.href = buildUrl({athlete: ''});
+    }
+    document.getElementById('filter-group').addEventListener('change', onCategoryChange);
+    document.getElementById('filter-sport').addEventListener('change', onCategoryChange);
+    document.getElementById('filter-division').addEventListener('change', onCategoryChange);
     document.getElementById('filter-race').addEventListener('change', updateFilters);
+    document.getElementById('filter-school').addEventListener('change', onSchoolChange);
+    document.getElementById('filter-athlete').addEventListener('change', updateFilters);
 
     // Highlight athlete row if linked from a dialog
     var params = new URLSearchParams(window.location.search);
-    var athlete = params.get('athlete');
-    if (athlete) {
-        athlete = athlete.trim();
+    var highlight = params.get('highlight');
+    if (highlight) {
+        var athlete = highlight.trim();
         var rows = document.querySelectorAll('tr[data-athlete]');
         rows.forEach(function(row) {
             if (row.dataset.athlete.trim() === athlete) {

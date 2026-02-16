@@ -347,24 +347,70 @@ def get_race_list(conn):
     return categories
 
 
-def get_race_results(conn, gender, sport, division, race_seq_number):
-    """Return race results for a specific race by sequential number.
+def get_race_results(conn, gender, sport, division, race_seq_number=None, school=None, athlete=None):
+    """Return race results with optional filters.
 
-    Returns list of dicts with place, name, school, time, points.
+    If race_seq_number is given, returns results for that specific race.
+    If omitted, returns results across all races (for athlete/school season view).
     """
     race_seq = _build_race_seq(conn, gender, sport, division)
-    # Reverse mapping: sequential -> global
     seq_to_global = {v: k for k, v in race_seq.items()}
-    global_race = seq_to_global.get(race_seq_number)
-    if global_race is None:
-        return []
+    global_to_seq = race_seq
 
+    # Build query with optional filters
+    query = """SELECT place, first_name, last_name, school, time_seconds, points, race_number
+               FROM race_results
+               WHERE gender = ? AND sport = ? AND division = ?"""
+    params = [gender, sport, division]
+
+    if race_seq_number:
+        global_race = seq_to_global.get(race_seq_number)
+        if global_race is None:
+            return []
+        query += " AND race_number = ?"
+        params.append(global_race)
+
+    if school:
+        query += " AND school = ?"
+        params.append(school)
+
+    if athlete:
+        parts = athlete.split(" ", 1)
+        if len(parts) == 2:
+            query += " AND first_name = ? AND last_name = ?"
+            params.extend(parts)
+
+    query += " ORDER BY race_number, place"
+    rows = conn.execute(query, params).fetchall()
+
+    results = []
+    for r in rows:
+        d = dict(r)
+        d["race_seq"] = global_to_seq.get(r["race_number"], r["race_number"])
+        results.append(d)
+
+    return results
+
+
+def get_schools(conn, gender, sport, division):
+    """Return sorted list of schools for a category."""
     rows = conn.execute(
-        """SELECT place, first_name, last_name, school, time_seconds, points
-           FROM race_results
-           WHERE gender = ? AND sport = ? AND division = ? AND race_number = ?
-           ORDER BY place""",
-        (gender, sport, division, global_race),
+        """SELECT DISTINCT school FROM race_results
+           WHERE gender = ? AND sport = ? AND division = ?
+           ORDER BY school""",
+        (gender, sport, division),
     ).fetchall()
+    return [r["school"] for r in rows]
 
-    return [dict(r) for r in rows]
+
+def get_athletes(conn, gender, sport, division, school=None):
+    """Return sorted list of athletes for a category, optionally filtered by school."""
+    query = """SELECT DISTINCT first_name, last_name FROM race_results
+               WHERE gender = ? AND sport = ? AND division = ?"""
+    params = [gender, sport, division]
+    if school:
+        query += " AND school = ?"
+        params.append(school)
+    query += " ORDER BY last_name, first_name"
+    rows = conn.execute(query, params).fetchall()
+    return [f"{r['first_name']} {r['last_name']}" for r in rows]
