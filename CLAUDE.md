@@ -47,8 +47,9 @@ Key modules in `yraa/`:
 ## Scoring Rules
 
 - **4 categories**: girls ski, boys ski, girls snowboard, boys snowboard
-- **Team**: Best 12 scores per school (max 4 per racer, combining Open + HS)
+- **Team**: Best 12 scores per school (max 4 per racer, combining Open + HS). Ties share the same rank.
 - **Individual**: Top 3 race results (or top 4 if ≥6 races), per division
+- **Individual tiebreakers** (Regulation 4.d.i.h): 1) head-to-head in shared races, 2) best single result then second-best etc., 3) more races. Unresolved ties share rank.
 - Tied places receive identical points. Floating-point scores supported for tie-splits.
 
 ## Data Directory Structure

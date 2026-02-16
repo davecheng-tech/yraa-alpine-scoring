@@ -102,6 +102,7 @@ For each team (school), within each category (e.g., Girls Ski):
 2. Scores from either division (HS or Open) are combined
 3. Maximum 4 scores per racer
 4. Zero scores only counted if the racer has at least one non-zero score
+5. Teams ranked by total points descending; ties share the same rank
 
 ### Individual Scoring
 
@@ -109,6 +110,16 @@ Per athlete within a gender/sport/division:
 
 - Sum of top 3 race results if 5 or fewer races have occurred
 - Sum of top 4 race results if 6 or more races have occurred
+- The athlete detail dialog shows all race results; counting results are bolded
+
+### Individual Tiebreakers (Regulation 4.d.i.h)
+
+When two athletes have the same total points, ties are broken in order:
+
+1. **Head-to-head**: Sum of points in races where both athletes competed; higher total wins
+2. **Best single result**: Compare each athlete's best race result, then second-best, and so on until one is higher
+3. **More races**: If all compared results are equal, the athlete with more races ranks higher
+4. If still tied after all tiebreakers, athletes share the same rank (skip-on-tie numbering)
 
 ### Leaderboards
 
