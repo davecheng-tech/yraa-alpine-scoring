@@ -180,7 +180,9 @@ yraa/
     templates/     — Jinja2 HTML templates
 
 data/
-    samples/       — sample/reference CSVs for ingest and legacy CLI formats (in git)
+    samples/
+        YYYYMMDD-N-gender_sport_results.csv.example  — reference raw race CSV for ingest
+        legacy_cli_sample.csv                        — reference pre-computed points CSV for legacy CLI
     raw/           — raw race result CSVs from scorekeeper (gitignored)
     yraa.db        — SQLite database (generated, gitignored)
 ```
