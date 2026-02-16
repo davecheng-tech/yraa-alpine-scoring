@@ -38,7 +38,7 @@ def calculate_team_scores(results: List[RaceResult]) -> List[TeamScore]:
             # Cap at 4 per racer
             for r in sorted_results[:MAX_SCORES_PER_RACER]:
                 eligible_scores.append(
-                    ContributingScore(score=r.score, athlete_name=athlete, race_number=r.race_number)
+                    ContributingScore(score=r.score, athlete_name=athlete, race_number=r.race_number, division=r.division)
                 )
 
         # Sort all eligible scores

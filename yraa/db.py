@@ -257,7 +257,7 @@ def get_team_leaderboard(conn, gender, sport):
     race_seq = {r["race_number"]: i + 1 for i, r in enumerate(distinct_races)}
 
     rows = conn.execute(
-        """SELECT first_name, last_name, school, race_number, points
+        """SELECT first_name, last_name, school, race_number, division, points
            FROM race_results
            WHERE gender = ? AND sport = ?""",
         (gender, sport),
@@ -272,6 +272,7 @@ def get_team_leaderboard(conn, gender, sport):
                 school=row["school"],
                 score=float(row["points"]),
                 race_number=race_seq[row["race_number"]],
+                division=row["division"],
             )
         )
 
