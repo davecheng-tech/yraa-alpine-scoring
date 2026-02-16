@@ -1,6 +1,8 @@
+import csv
+import io
 import os
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 
 from .db import get_connection, init_db, get_team_leaderboard, get_individual_leaderboard, get_season_summary
@@ -109,6 +111,50 @@ def api_team_leaderboard(gender: str, sport: str):
         }
         for i, t in enumerate(teams)
     ]
+
+
+@app.get("/export/{gender}/{sport}/{division}")
+def export_csv(gender: str, sport: str, division: str):
+    if not _validate_params(gender, sport, division):
+        return HTMLResponse("Invalid parameters", status_code=404)
+    conn = _get_db()
+    athletes = get_individual_leaderboard(conn, gender, sport, division)
+    conn.close()
+
+    # Determine total number of races from all athletes' results
+    max_race = 0
+    for a in athletes:
+        for r in a["all_results"]:
+            if r["race_number"] > max_race:
+                max_race = r["race_number"]
+
+    # Build CSV in memory
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Header row
+    header = ["place", "first_name", "last_name", "school"]
+    for i in range(1, max_race + 1):
+        header.append(f"race_{i}")
+    header.append("total_points")
+    writer.writerow(header)
+
+    # Data rows
+    for a in athletes:
+        race_points = {r["race_number"]: r["points"] for r in a["all_results"]}
+        row = [a["rank"], a["first_name"], a["last_name"], a["school"]]
+        for i in range(1, max_race + 1):
+            row.append(race_points.get(i, ""))
+        row.append(a["total_points"])
+        writer.writerow(row)
+
+    filename = f"{gender}_{sport}_{division}_individual.csv"
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @app.get("/api/individual/{gender}/{sport}/{division}")
