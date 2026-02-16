@@ -18,7 +18,7 @@
     <tbody>
         {% for a in athletes %}
         <tr>
-            <td class="rank">{{ loop.index }}</td>
+            <td class="rank">{{ a.rank }}</td>
             <td>{{ a.first_name }} {{ a.last_name }}</td>
             <td>{{ a.school }}</td>
             <td class="points points-clickable" onclick="showDetail('athlete-{{ loop.index }}')">{{ a.total_points }}</td>

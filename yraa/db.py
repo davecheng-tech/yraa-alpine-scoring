@@ -1,5 +1,6 @@
 import sqlite3
 from collections import defaultdict
+from functools import cmp_to_key
 from .models import RaceResult
 from .scoring import calculate_team_scores
 
@@ -100,6 +101,42 @@ def insert_race_results(conn, results, event_id, race_number):
     return inserted, skipped
 
 
+def _compare_athletes(a, b):
+    """Compare two athletes for sorting (descending order).
+
+    Returns positive if a should rank higher, negative if b should,
+    0 if truly tied. Tiebreakers per YRAA Regulation 4.d.i.h:
+      1. Head-to-head: sum of points in races where both competed
+      2. Best single race result, then second-best, etc.
+    """
+    # Primary: total points
+    if a["total_points"] != b["total_points"]:
+        return 1 if a["total_points"] > b["total_points"] else -1
+
+    # Tiebreaker 1: Head-to-head in shared races
+    a_by_race = {r["race_number"]: r["points"] for r in a["all_results"]}
+    b_by_race = {r["race_number"]: r["points"] for r in b["all_results"]}
+    shared = set(a_by_race) & set(b_by_race)
+    if shared:
+        a_h2h = sum(a_by_race[rn] for rn in shared)
+        b_h2h = sum(b_by_race[rn] for rn in shared)
+        if a_h2h != b_h2h:
+            return 1 if a_h2h > b_h2h else -1
+
+    # Tiebreaker 2+3: Compare best single race, then second-best, etc.
+    a_desc = sorted((r["points"] for r in a["all_results"]), reverse=True)
+    b_desc = sorted((r["points"] for r in b["all_results"]), reverse=True)
+    for ap, bp in zip(a_desc, b_desc):
+        if ap != bp:
+            return 1 if ap > bp else -1
+
+    # If one athlete has more races (and all compared equal), more races wins
+    if len(a_desc) != len(b_desc):
+        return 1 if len(a_desc) > len(b_desc) else -1
+
+    return 0
+
+
 def get_individual_leaderboard(conn, gender, sport, division):
     """Return individual leaderboard: sum top N points per athlete.
 
@@ -145,9 +182,23 @@ def get_individual_leaderboard(conn, gender, sport, division):
             "total_points": total,
             "top_results": top,
             "race_count": len(race_points),
+            "all_results": race_points,
         })
 
-    leaderboard.sort(key=lambda x: x["total_points"], reverse=True)
+    leaderboard.sort(key=cmp_to_key(_compare_athletes), reverse=True)
+
+    # Assign ranks with skip-on-tie logic
+    for i, entry in enumerate(leaderboard):
+        if i == 0:
+            entry["rank"] = 1
+        elif _compare_athletes(leaderboard[i - 1], entry) == 0:
+            entry["rank"] = leaderboard[i - 1]["rank"]
+        else:
+            entry["rank"] = i + 1
+
+    for entry in leaderboard:
+        del entry["all_results"]
+
     return leaderboard
 
 

@@ -31,7 +31,6 @@
     {% endfor %}
 </div>
 {% else %}
-<p>No race data has been ingested yet. Use the CLI to ingest race results:</p>
-<pre><code>python3 -m yraa.ingest --file data/raw/&lt;file&gt;.csv</code></pre>
+<p>No results yet. Check back soon!</p>
 {% endif %}
 {% endblock %}
