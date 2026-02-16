@@ -97,9 +97,10 @@
     var params = new URLSearchParams(window.location.search);
     var athlete = params.get('athlete');
     if (athlete) {
+        athlete = athlete.trim();
         var rows = document.querySelectorAll('tr[data-athlete]');
         rows.forEach(function(row) {
-            if (row.dataset.athlete === athlete) {
+            if (row.dataset.athlete.trim() === athlete) {
                 row.classList.add('highlighted');
                 row.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
