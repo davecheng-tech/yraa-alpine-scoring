@@ -12,12 +12,7 @@
     {% endfor %}
 </div>
 
-<table>
-    <tbody>
-        <tr><td>Events completed</td><td>{{ summary.event_count }}</td></tr>
-        <tr><td>Last event</td><td>{{ summary.last_event_date }}</td></tr>
-    </tbody>
-</table>
+<p><small>{{ summary.event_count }} event{{ 's' if summary.event_count != 1 }} completed — last event {{ summary.last_event_date }}</small></p>
 {% else %}
 <p>No results yet. Check back soon!</p>
 {% endif %}
