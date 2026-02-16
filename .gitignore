@@ -206,5 +206,6 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-# YRAA database
+# YRAA database and production data
 *.db
+data/raw/

@@ -25,7 +25,7 @@ docker compose up -d
 docker exec yraa python3 -m yraa.ingest --dir /app/data/raw/
 
 # Legacy CLI (pre-computed CSVs)
-python3 -m yraa.cli --input data/sample_girls_ski.csv
+python3 -m yraa.cli --input data/samples/sample_girls_ski.csv
 ```
 
 No test framework is configured yet (`tests/` is empty).
@@ -51,6 +51,13 @@ Key modules in `yraa/`:
 - **Individual**: Top 3 race results (or top 4 if ≥6 races), per division
 - Tied places receive identical points. Floating-point scores supported for tie-splits.
 
+## Data Directory Structure
+
+- `data/samples/` — Sample CSVs for testing (in git)
+- `data/raw/` — Production race CSVs (gitignored, local-only)
+- `data/yraa.db` — SQLite database (gitignored, regenerated on ingest)
+- `data/alpine_skiing_regulations.pdf` — Reference document (in git)
+
 ## Deployment
 
-Docker container on port 8000, mapped to host 8822. Traefik reverse proxy to `yraa.davecheng.com`. SQLite DB at `data/yraa.db` (volume-mounted, gitignored).
+Docker container on port 8000, mapped to host 8822. Traefik reverse proxy to `yraa.davecheng.com`. SQLite DB at `data/yraa.db` (volume-mounted, gitignored). Production race CSVs in `data/raw/` are not tracked in git.

@@ -52,7 +52,7 @@ Set `YRAA_DB_PATH` to change the database location (default: `data/yraa.db`).
 The original CLI for pre-computed championship point CSVs still works:
 
 ```
-python3 -m yraa.cli --input data/sample_girls_ski.csv
+python3 -m yraa.cli --input data/samples/sample_girls_ski.csv
 ```
 
 ## Docker Deployment
@@ -166,7 +166,7 @@ yraa/
     templates/     — Jinja2 HTML templates
 
 data/
-    raw/           — raw race result CSVs from scorekeeper
+    samples/       — sample pre-computed datasets for legacy CLI (in git)
+    raw/           — raw race result CSVs from scorekeeper (gitignored)
     yraa.db        — SQLite database (generated, gitignored)
-    sample_*.csv   — sample pre-computed datasets for legacy CLI
 ```
