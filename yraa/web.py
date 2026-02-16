@@ -106,7 +106,10 @@ def api_team_leaderboard(gender: str, sport: str):
             "rank": i + 1,
             "school": t.school,
             "total_points": t.total_points,
-            "contributing_scores": t.contributing_scores,
+            "contributing_scores": [
+                {"score": s.score, "athlete_name": s.athlete_name, "race_number": s.race_number}
+                for s in t.contributing_scores
+            ],
         }
         for i, t in enumerate(teams)
     ]

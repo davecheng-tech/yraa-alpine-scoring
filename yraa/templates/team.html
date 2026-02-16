@@ -31,8 +31,8 @@
         <h4>{{ team.school }}</h4>
         <p><strong>Total: {{ '%g' % team.total_points }}</strong> (top {{ team.contributing_scores | length }} scores)</p>
         <ul class="scores-list">
-            {% for score in team.contributing_scores %}
-            <li>{{ '%g' % score }}</li>
+            {% for s in team.contributing_scores %}
+            <li>{{ '%g' % s.score }} ({{ s.athlete_name }}, Race {{ s.race_number }})</li>
             {% endfor %}
         </ul>
         <footer>

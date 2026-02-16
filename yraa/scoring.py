@@ -1,6 +1,6 @@
 from collections import defaultdict
 from typing import List, Dict
-from .models import RaceResult, TeamScore
+from .models import RaceResult, TeamScore, ContributingScore
 
 MAX_TEAM_SCORES = 12
 MAX_SCORES_PER_RACER = 4
@@ -23,26 +23,29 @@ def calculate_team_scores(results: List[RaceResult]) -> List[TeamScore]:
         # Group by athlete
         results_by_athlete = defaultdict(list)
         for r in school_results:
-            results_by_athlete[r.athlete_name].append(r.score)
+            results_by_athlete[r.athlete_name].append(r)
 
         eligible_scores = []
 
-        for athlete, scores in results_by_athlete.items():
+        for athlete, results in results_by_athlete.items():
 
             # Remove athletes with only zero scores
-            if max(scores) == 0:
+            if max(r.score for r in results) == 0:
                 continue
 
-            scores_sorted = sorted(scores, reverse=True)
+            sorted_results = sorted(results, key=lambda r: r.score, reverse=True)
 
             # Cap at 4 per racer
-            eligible_scores.extend(scores_sorted[:MAX_SCORES_PER_RACER])
+            for r in sorted_results[:MAX_SCORES_PER_RACER]:
+                eligible_scores.append(
+                    ContributingScore(score=r.score, athlete_name=athlete, race_number=r.race_number)
+                )
 
         # Sort all eligible scores
-        eligible_scores.sort(reverse=True)
+        eligible_scores.sort(key=lambda s: s.score, reverse=True)
 
         top_scores = eligible_scores[:MAX_TEAM_SCORES]
-        total = sum(top_scores)
+        total = sum(s.score for s in top_scores)
 
         team_scores.append(
             TeamScore(

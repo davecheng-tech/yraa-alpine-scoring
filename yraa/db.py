@@ -241,8 +241,17 @@ def get_team_leaderboard(conn, gender, sport):
 
     Combines Open + HS divisions for team scoring.
     """
+    # Build per-category sequential race number mapping
+    distinct_races = conn.execute(
+        """SELECT DISTINCT race_number FROM race_results
+           WHERE gender = ? AND sport = ?
+           ORDER BY race_number""",
+        (gender, sport),
+    ).fetchall()
+    race_seq = {r["race_number"]: i + 1 for i, r in enumerate(distinct_races)}
+
     rows = conn.execute(
-        """SELECT first_name, last_name, school, points
+        """SELECT first_name, last_name, school, race_number, points
            FROM race_results
            WHERE gender = ? AND sport = ?""",
         (gender, sport),
@@ -256,6 +265,7 @@ def get_team_leaderboard(conn, gender, sport):
                 athlete_name=f"{row['first_name']} {row['last_name']}",
                 school=row["school"],
                 score=float(row["points"]),
+                race_number=race_seq[row["race_number"]],
             )
         )
 
