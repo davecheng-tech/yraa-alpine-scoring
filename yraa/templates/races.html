@@ -70,17 +70,6 @@
 <p>No results found for this selection.</p>
 {% endif %}
 
-<style>
-    @keyframes highlight-fade {
-        0%, 30% { background-color: rgba(255, 220, 100, 0.6) !important; }
-        100% { background-color: transparent !important; }
-    }
-    tr.highlighted td {
-        animation: highlight-fade 3s ease-out;
-        animation-fill-mode: backwards;
-    }
-</style>
-
 <script>
     function updateFilters() {
         var gender = document.getElementById('filter-gender').value;
@@ -102,8 +91,17 @@
         var rows = document.querySelectorAll('tr[data-athlete]');
         rows.forEach(function(row) {
             if (row.dataset.athlete.trim() === athlete) {
-                row.classList.add('highlighted');
+                var cells = row.querySelectorAll('td');
+                cells.forEach(function(td) {
+                    td.style.backgroundColor = 'rgba(255, 220, 100, 0.6)';
+                    td.style.transition = 'background-color 2s ease-out';
+                });
                 row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(function() {
+                    cells.forEach(function(td) {
+                        td.style.backgroundColor = '';
+                    });
+                }, 1000);
             }
         });
     }
