@@ -206,7 +206,8 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-# YRAA database and production data
+# YRAA database and production/sample data
 *.db
 data/raw/*
 !data/raw/.gitkeep
+data/samples/

@@ -54,7 +54,7 @@ Key modules in `yraa/`:
 
 ## Data Directory Structure
 
-- `data/samples/` — Sample CSVs for testing (in git)
+- `data/samples/` — Sample CSVs for testing (gitignored, local-only)
 - `data/raw/` — Production race CSVs (gitignored, local-only)
 - `data/yraa.db` — SQLite database (gitignored, regenerated on ingest)
 - `data/alpine_skiing_regulations.pdf` — Reference document (in git)

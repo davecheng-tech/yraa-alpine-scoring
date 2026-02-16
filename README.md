@@ -180,7 +180,7 @@ yraa/
     templates/     — Jinja2 HTML templates
 
 data/
-    samples/       — sample pre-computed datasets for legacy CLI (in git)
+    samples/       — sample datasets for testing (gitignored, local-only)
     raw/           — raw race result CSVs from scorekeeper (gitignored)
     yraa.db        — SQLite database (generated, gitignored)
 ```
