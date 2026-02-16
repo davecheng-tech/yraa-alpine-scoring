@@ -7,12 +7,12 @@
 <p>Scoring follows the York Region Athletic Association <a href="http://yraa.com/documents/playingregs/AlpineSkiingRegs.pdf">playing regulations</a> for the 2025–26 alpine skiing and snowboarding season.</p>
 
 {% if summary.result_count > 0 %}
-<div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+<div class="grid">
     {% for cat in categories %}
-    <a href="/{{ cat.gender }}/{{ cat.sport }}" role="button" class="outline" style="white-space: nowrap;">{{ cat.gender|title }} {{ cat.sport|title }}</a>
+    <a href="/{{ cat.gender }}/{{ cat.sport }}" role="button" class="outline">{{ cat.gender|title }} {{ cat.sport|title }}</a>
     {% endfor %}
-    <a href="/races" role="button" class="outline" style="white-space: nowrap;">Race Results</a>
 </div>
+<div><a href="/races" role="button" class="outline" style="width: auto; color: #999; border-color: #ccc;">Race Results</a></div>
 
 <p style="margin-top: 2rem;"><small>{{ summary.event_count }} event{{ 's' if summary.event_count != 1 }} completed. Last event {{ summary.last_event_date }}.</small></p>
 {% else %}
