@@ -6,18 +6,18 @@
 <p>Your championship results, updated after each event.</p>
 
 {% if summary.result_count > 0 %}
+<div class="grid">
+    {% for cat in categories %}
+    <a href="/{{ cat.gender }}/{{ cat.sport }}" role="button" class="outline">{{ cat.gender|title }} {{ cat.sport|title }}</a>
+    {% endfor %}
+</div>
+
 <table>
     <tbody>
         <tr><td>Events completed</td><td>{{ summary.event_count }}</td></tr>
         <tr><td>Last event</td><td>{{ summary.last_event_date }}</td></tr>
     </tbody>
 </table>
-
-<div class="grid">
-    {% for cat in categories %}
-    <a href="/{{ cat.gender }}/{{ cat.sport }}" role="button" class="outline">{{ cat.gender|title }} {{ cat.sport|title }}</a>
-    {% endfor %}
-</div>
 {% else %}
 <p>No results yet. Check back soon!</p>
 {% endif %}
