@@ -33,6 +33,9 @@
     <label>
         Race
         <select id="filter-race">
+            {% if has_narrowing_filter %}
+            <option value="all"{% if selected_race == "all" %} selected{% endif %}>All Races</option>
+            {% endif %}
             {% for r in races %}
             <option value="{{ r.seq }}"{% if r.seq == selected_race %} selected{% endif %}>Race {{ r.seq }} ({{ r.event_date }})</option>
             {% endfor %}
@@ -68,6 +71,7 @@
 <table>
     <thead>
         <tr>
+            {% if selected_race == "all" %}<th class="rank">Race</th>{% endif %}
             <th class="rank">Place</th>
             <th>Athlete</th>
             <th>School</th>
@@ -78,6 +82,7 @@
     <tbody>
         {% for r in results %}
         <tr data-athlete="{{ r.first_name }} {{ r.last_name }}">
+            {% if selected_race == "all" %}<td class="rank">{{ r.race_seq }}</td>{% endif %}
             <td class="rank">{{ r.place }}</td>
             <td>{{ r.first_name }} {{ r.last_name }}</td>
             <td>{{ r.school }}</td>
