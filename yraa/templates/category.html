@@ -85,7 +85,7 @@
         <p><strong>Total: {{ a.total_points }}</strong> (top {{ a.top_results | length }} of {{ a.race_count }} race{{ 's' if a.race_count != 1 }})</p>
         <ul class="scores-list">
             {% for r in a.all_results %}
-            <li>{% if r.counting %}<strong>Race {{ r.race_number }}: {{ r.points }} pts</strong>{% else %}Race {{ r.race_number }}: {{ r.points }} pts{% endif %}</li>
+            <li>{% if r.counting %}<strong><a href="/races?gender={{ gender }}&sport={{ sport }}&division={{ tab }}&race={{ r.race_number }}">Race {{ r.race_number }}</a>: {{ r.points }} pts</strong>{% else %}<a href="/races?gender={{ gender }}&sport={{ sport }}&division={{ tab }}&race={{ r.race_number }}">Race {{ r.race_number }}</a>: {{ r.points }} pts{% endif %}</li>
             {% endfor %}
         </ul>
         <footer>
