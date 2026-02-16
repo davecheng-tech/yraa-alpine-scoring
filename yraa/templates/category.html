@@ -84,8 +84,8 @@
         <h4>{{ a.first_name }} {{ a.last_name }}</h4>
         <p><strong>Total: {{ a.total_points }}</strong> (top {{ a.top_results | length }} of {{ a.race_count }} race{{ 's' if a.race_count != 1 }})</p>
         <ul class="scores-list">
-            {% for r in a.top_results %}
-            <li>Race {{ r.race_number }}: {{ r.points }} pts</li>
+            {% for r in a.all_results %}
+            <li>{% if r.counting %}<strong>Race {{ r.race_number }}: {{ r.points }} pts</strong>{% else %}Race {{ r.race_number }}: {{ r.points }} pts{% endif %}</li>
             {% endfor %}
         </ul>
         <footer>

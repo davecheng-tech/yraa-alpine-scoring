@@ -222,7 +222,11 @@ def get_individual_leaderboard(conn, gender, sport, division):
             entry["rank"] = i + 1
 
     for entry in leaderboard:
-        del entry["all_results"]
+        top_set = {(r["race_number"], r["points"]) for r in entry["top_results"]}
+        all_sorted = sorted(entry["all_results"], key=lambda x: x["race_number"])
+        for r in all_sorted:
+            r["counting"] = (r["race_number"], r["points"]) in top_set
+        entry["all_results"] = all_sorted
 
     return leaderboard
 
