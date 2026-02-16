@@ -129,7 +129,15 @@
     document.getElementById('filter-division').addEventListener('change', onCategoryChange);
     document.getElementById('filter-race').addEventListener('change', updateFilters);
     document.getElementById('filter-school').addEventListener('change', onSchoolChange);
-    document.getElementById('filter-athlete').addEventListener('change', updateFilters);
+    document.getElementById('filter-athlete').addEventListener('change', function() {
+        var athleteVal = document.getElementById('filter-athlete').value;
+        // Default to "All Races" when selecting a specific athlete
+        if (athleteVal) {
+            window.location.href = buildUrl({race: 'all'});
+        } else {
+            window.location.href = buildUrl();
+        }
+    });
 
     // Highlight athlete row if linked from a dialog
     var params = new URLSearchParams(window.location.search);
