@@ -257,7 +257,7 @@ def get_team_leaderboard(conn, gender, sport):
     race_seq = {r["race_number"]: i + 1 for i, r in enumerate(distinct_races)}
 
     rows = conn.execute(
-        """SELECT first_name, last_name, school, race_number, points
+        """SELECT first_name, last_name, school, race_number, division, points
            FROM race_results
            WHERE gender = ? AND sport = ?""",
         (gender, sport),
@@ -272,6 +272,7 @@ def get_team_leaderboard(conn, gender, sport):
                 school=row["school"],
                 score=float(row["points"]),
                 race_number=race_seq[row["race_number"]],
+                division=row["division"],
             )
         )
 
@@ -306,4 +307,64 @@ def get_race_numbers(conn):
            FROM race_results
            ORDER BY race_number""",
     ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def _build_race_seq(conn, gender, sport, division):
+    """Build mapping from global race_number to per-category sequential number."""
+    distinct_races = conn.execute(
+        """SELECT DISTINCT race_number FROM race_results
+           WHERE gender = ? AND sport = ? AND division = ?
+           ORDER BY race_number""",
+        (gender, sport, division),
+    ).fetchall()
+    return {r["race_number"]: i + 1 for i, r in enumerate(distinct_races)}
+
+
+def get_race_list(conn):
+    """Return race info per category for filter dropdowns.
+
+    Returns dict keyed by (gender, sport, division) with list of
+    {seq, event_date} entries.
+    """
+    rows = conn.execute(
+        """SELECT DISTINCT race_number, gender, sport, division,
+                  (SELECT event_date FROM events WHERE id = race_results.event_id) as event_date
+           FROM race_results
+           ORDER BY gender, sport, division, race_number""",
+    ).fetchall()
+
+    categories = defaultdict(list)
+    seq_counters = defaultdict(int)
+    for r in rows:
+        key = (r["gender"], r["sport"], r["division"])
+        seq_counters[key] += 1
+        categories[key].append({
+            "seq": seq_counters[key],
+            "event_date": r["event_date"],
+        })
+
+    return categories
+
+
+def get_race_results(conn, gender, sport, division, race_seq_number):
+    """Return race results for a specific race by sequential number.
+
+    Returns list of dicts with place, name, school, time, points.
+    """
+    race_seq = _build_race_seq(conn, gender, sport, division)
+    # Reverse mapping: sequential -> global
+    seq_to_global = {v: k for k, v in race_seq.items()}
+    global_race = seq_to_global.get(race_seq_number)
+    if global_race is None:
+        return []
+
+    rows = conn.execute(
+        """SELECT place, first_name, last_name, school, time_seconds, points
+           FROM race_results
+           WHERE gender = ? AND sport = ? AND division = ? AND race_number = ?
+           ORDER BY place""",
+        (gender, sport, division, global_race),
+    ).fetchall()
+
     return [dict(r) for r in rows]

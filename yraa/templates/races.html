@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Race Results — YRAA{% endblock %}
+
+{% block content %}
+<h2>Race Results</h2>
+
+<div class="grid">
+    <label>
+        Group
+        <select id="filter-group">
+            {% for g in groups %}
+            <option value="{{ g }}"{% if g == selected_group %} selected{% endif %}>{{ g|title }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>
+        Sport
+        <select id="filter-sport">
+            {% for s in sports %}
+            <option value="{{ s }}"{% if s == selected_sport %} selected{% endif %}>{{ s|title }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>
+        Division
+        <select id="filter-division">
+            {% for d in divisions %}
+            <option value="{{ d }}"{% if d == selected_division %} selected{% endif %}>{{ d|upper }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>
+        Race
+        <select id="filter-race">
+            {% for r in races %}
+            <option value="{{ r.seq }}"{% if r.seq == selected_race %} selected{% endif %}>Race {{ r.seq }} ({{ r.event_date }})</option>
+            {% endfor %}
+        </select>
+    </label>
+</div>
+
+{% if results %}
+{% if event_date %}
+<p><small>{{ selected_group|title }} {{ selected_sport|title }} — {{ selected_division|upper }} Division — Race {{ selected_race }} ({{ event_date }})</small></p>
+{% endif %}
+<table>
+    <thead>
+        <tr>
+            <th class="rank">Place</th>
+            <th>Athlete</th>
+            <th>School</th>
+            <th class="points">Time</th>
+            <th class="points">Pts</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in results %}
+        <tr data-athlete="{{ r.first_name }} {{ r.last_name }}">
+            <td class="rank">{{ r.place }}</td>
+            <td>{{ r.first_name }} {{ r.last_name }}</td>
+            <td>{{ r.school }}</td>
+            <td class="points">{{ '%.2f' % r.time_seconds if r.time_seconds else '' }}</td>
+            <td class="points">{{ r.points }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No results found for this selection.</p>
+{% endif %}
+
+<script>
+    function updateFilters() {
+        var group = document.getElementById('filter-group').value;
+        var sport = document.getElementById('filter-sport').value;
+        var division = document.getElementById('filter-division').value;
+        var race = document.getElementById('filter-race').value;
+        window.location.href = '/races?group=' + group + '&sport=' + sport + '&division=' + division + '&race=' + race;
+    }
+    document.getElementById('filter-group').addEventListener('change', updateFilters);
+    document.getElementById('filter-sport').addEventListener('change', updateFilters);
+    document.getElementById('filter-division').addEventListener('change', updateFilters);
+    document.getElementById('filter-race').addEventListener('change', updateFilters);
+
+    // Highlight athlete row if linked from a dialog
+    var params = new URLSearchParams(window.location.search);
+    var athlete = params.get('athlete');
+    if (athlete) {
+        athlete = athlete.trim();
+        var rows = document.querySelectorAll('tr[data-athlete]');
+        rows.forEach(function(row) {
+            if (row.dataset.athlete.trim() === athlete) {
+                var cells = row.querySelectorAll('td');
+                cells.forEach(function(td) {
+                    td.style.backgroundColor = 'rgba(255, 220, 100, 0.6)';
+                    td.style.transition = 'background-color 2s ease-out';
+                });
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(function() {
+                    cells.forEach(function(td) {
+                        td.style.backgroundColor = '';
+                    });
+                }, 1000);
+            }
+        });
+    }
+</script>
+{% endblock %}

@@ -2,7 +2,7 @@
 
 A scoring engine and web dashboard for the YRAA Alpine Ski & Snowboard Team Championships. Ingests raw race result CSVs, calculates championship points from place finishes, stores everything in SQLite, and serves team and individual leaderboards via a read-only web dashboard.
 
-Implements scoring logic from YRAA Alpine Skiing Playing Regulations, sections 4.c–d.
+Implements scoring logic from the [YRAA Alpine Skiing Playing Regulations](http://yraa.com/documents/playingregs/AlpineSkiingRegs.pdf), sections 4.c–d.
 
 ## Quick Start
 
@@ -190,9 +190,8 @@ data/
 ## Planned Features
 
 - **Bill Crothers exclusion toggle** — UI option to exclude Bill Crothers SS from team standings per Regulation 7 (ineligible for team awards)
-- **CSV export** — Export computed leaderboards as CSV (place, name, school, per-race points, total) for each category/division combination, for archival in Google Sheets. CLI first, then web.
-- **Race results view** — Browse formatted results for individual races (times, places, notes), not just championship points
 - **Admin interface** — Authenticated web UI for uploading race result CSVs, replacing the CLI ingest workflow
+- **Race results notes** — Store DNS/DNF/DQ notes in the database schema and display them in the race results view
 
 ## To Do
 

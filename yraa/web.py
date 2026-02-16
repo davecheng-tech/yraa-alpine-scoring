@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 
-from .db import get_connection, init_db, get_team_leaderboard, get_individual_leaderboard, get_season_summary
+from .db import get_connection, init_db, get_team_leaderboard, get_individual_leaderboard, get_season_summary, get_race_list, get_race_results
 
 DB_PATH = os.environ.get("YRAA_DB_PATH", "data/yraa.db")
 
@@ -39,7 +39,7 @@ def _validate_params(gender, sport, division=None):
 
 
 def _label(gender, sport):
-    return f"{gender.title()} {sport.title()}"
+    return f"{gender.title()} {sport.title()} Championship"
 
 
 @app.on_event("startup")
@@ -56,6 +56,65 @@ def home(request: Request):
         "request": request,
         "summary": summary,
         "categories": CATEGORIES,
+    })
+
+
+@app.get("/races", response_class=HTMLResponse)
+def races_page(request: Request, group: str = None, sport: str = None, division: str = None, race: str = None):
+    # Parse race number safely (may be empty string from filters)
+    race_num = None
+    if race:
+        try:
+            race_num = int(race)
+        except ValueError:
+            pass
+
+    gender = group
+    conn = _get_db()
+    race_list = get_race_list(conn)
+
+    # Build filter options from available data
+    genders = sorted({k[0] for k in race_list})
+    sports = sorted({k[1] for k in race_list})
+    divisions = sorted({k[2] for k in race_list})
+
+    # Default to first available if not specified
+    if not gender and genders:
+        gender = genders[0]
+    if not sport and sports:
+        sport = sports[0]
+    if not division and divisions:
+        division = divisions[0]
+
+    # Get available races for the selected category
+    category_races = race_list.get((gender, sport, division), [])
+    if not race_num and category_races:
+        race_num = category_races[0]["seq"]
+
+    # Fetch results
+    results = []
+    event_date = None
+    if gender and sport and division and race_num:
+        results = get_race_results(conn, gender, sport, division, race_num)
+        for cr in category_races:
+            if cr["seq"] == race_num:
+                event_date = cr["event_date"]
+                break
+
+    conn.close()
+    return templates.TemplateResponse("races.html", {
+        "request": request,
+        "categories": CATEGORIES,
+        "results": results,
+        "groups": genders,
+        "sports": sports,
+        "divisions": divisions,
+        "races": category_races,
+        "selected_group": gender,
+        "selected_sport": sport,
+        "selected_division": division,
+        "selected_race": race_num,
+        "event_date": event_date,
     })
 
 
