@@ -39,7 +39,7 @@ def _validate_params(gender, sport, division=None):
 
 
 def _label(gender, sport):
-    return f"{gender.title()} {sport.title()}"
+    return f"{gender.title()} {sport.title()} Championship"
 
 
 @app.on_event("startup")
