@@ -11,9 +11,8 @@
     {% for cat in categories %}
     <a href="/{{ cat.gender }}/{{ cat.sport }}" role="button" class="outline">{{ cat.gender|title }} {{ cat.sport|title }}</a>
     {% endfor %}
+    <a href="/races" role="button" class="outline">Race Results</a>
 </div>
-
-<p style="margin-top: 1rem;"><a href="/races" role="button" class="outline secondary">Race Results</a></p>
 
 <p style="margin-top: 2rem;"><small>{{ summary.event_count }} event{{ 's' if summary.event_count != 1 }} completed. Last event {{ summary.last_event_date }}.</small></p>
 {% else %}
