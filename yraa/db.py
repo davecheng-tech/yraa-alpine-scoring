@@ -135,8 +135,8 @@ def get_individual_leaderboard(conn, gender, sport, division):
 
     leaderboard = []
     for (first_name, last_name), race_points in athletes.items():
-        sorted_points = sorted(race_points, key=lambda x: x["points"], reverse=True)
-        top = sorted_points[:top_n]
+        by_points = sorted(race_points, key=lambda x: x["points"], reverse=True)
+        top = sorted(by_points[:top_n], key=lambda x: x["race_number"])
         total = sum(r["points"] for r in top)
         leaderboard.append({
             "first_name": first_name,
