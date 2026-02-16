@@ -7,10 +7,10 @@
 
 <div class="grid">
     <label>
-        Gender
-        <select id="filter-gender">
-            {% for g in genders %}
-            <option value="{{ g }}"{% if g == selected_gender %} selected{% endif %}>{{ g|title }}</option>
+        Group
+        <select id="filter-group">
+            {% for g in groups %}
+            <option value="{{ g }}"{% if g == selected_group %} selected{% endif %}>{{ g|title }}</option>
             {% endfor %}
         </select>
     </label>
@@ -42,7 +42,7 @@
 
 {% if results %}
 {% if event_date %}
-<p><small>{{ selected_gender|title }} {{ selected_sport|title }} — {{ selected_division|upper }} Division — Race {{ selected_race }} ({{ event_date }})</small></p>
+<p><small>{{ selected_group|title }} {{ selected_sport|title }} — {{ selected_division|upper }} Division — Race {{ selected_race }} ({{ event_date }})</small></p>
 {% endif %}
 <table>
     <thead>
@@ -72,13 +72,13 @@
 
 <script>
     function updateFilters() {
-        var gender = document.getElementById('filter-gender').value;
+        var group = document.getElementById('filter-group').value;
         var sport = document.getElementById('filter-sport').value;
         var division = document.getElementById('filter-division').value;
         var race = document.getElementById('filter-race').value;
-        window.location.href = '/races?gender=' + gender + '&sport=' + sport + '&division=' + division + '&race=' + race;
+        window.location.href = '/races?group=' + group + '&sport=' + sport + '&division=' + division + '&race=' + race;
     }
-    document.getElementById('filter-gender').addEventListener('change', updateFilters);
+    document.getElementById('filter-group').addEventListener('change', updateFilters);
     document.getElementById('filter-sport').addEventListener('change', updateFilters);
     document.getElementById('filter-division').addEventListener('change', updateFilters);
     document.getElementById('filter-race').addEventListener('change', updateFilters);

@@ -60,7 +60,7 @@ def home(request: Request):
 
 
 @app.get("/races", response_class=HTMLResponse)
-def races_page(request: Request, gender: str = None, sport: str = None, division: str = None, race: str = None):
+def races_page(request: Request, group: str = None, sport: str = None, division: str = None, race: str = None):
     # Parse race number safely (may be empty string from filters)
     race_num = None
     if race:
@@ -69,6 +69,7 @@ def races_page(request: Request, gender: str = None, sport: str = None, division
         except ValueError:
             pass
 
+    gender = group
     conn = _get_db()
     race_list = get_race_list(conn)
 
@@ -105,11 +106,11 @@ def races_page(request: Request, gender: str = None, sport: str = None, division
         "request": request,
         "categories": CATEGORIES,
         "results": results,
-        "genders": genders,
+        "groups": genders,
         "sports": sports,
         "divisions": divisions,
         "races": category_races,
-        "selected_gender": gender,
+        "selected_group": gender,
         "selected_sport": sport,
         "selected_division": division,
         "selected_race": race_num,
