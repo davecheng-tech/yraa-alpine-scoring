@@ -40,7 +40,7 @@
         <p><strong>Total: {{ '%g' % team.total_points }}</strong> (top {{ team.contributing_scores | length }} scores)</p>
         <ul class="scores-list">
             {% for s in team.contributing_scores %}
-            <li>{{ '%g' % s.score }} ({{ s.athlete_name }}, <a href="/races?gender={{ gender }}&sport={{ sport }}&division={{ s.division }}&race={{ s.race_number }}">Race {{ s.race_number }}</a>)</li>
+            <li>{{ '%g' % s.score }} ({{ s.athlete_name }}, <a href="/races?gender={{ gender }}&sport={{ sport }}&division={{ s.division }}&race={{ s.race_number }}&athlete={{ s.athlete_name|urlencode }}">Race {{ s.race_number }}</a>)</li>
             {% endfor %}
         </ul>
         <footer>
@@ -85,7 +85,7 @@
         <p><strong>Total: {{ a.total_points }}</strong> (top {{ a.top_results | length }} of {{ a.race_count }} race{{ 's' if a.race_count != 1 }})</p>
         <ul class="scores-list">
             {% for r in a.all_results %}
-            <li{% if not r.counting %} style="opacity: 0.45"{% endif %}><a href="/races?gender={{ gender }}&sport={{ sport }}&division={{ tab }}&race={{ r.race_number }}">Race {{ r.race_number }}</a>: {{ r.points }} pts</li>
+            <li{% if not r.counting %} style="opacity: 0.35"{% endif %}><a href="/races?gender={{ gender }}&sport={{ sport }}&division={{ tab }}&race={{ r.race_number }}&athlete={{ (a.first_name ~ ' ' ~ a.last_name)|urlencode }}">Race {{ r.race_number }}</a>: {{ r.points }} pts</li>
             {% endfor %}
         </ul>
         <footer>

@@ -56,7 +56,7 @@
     </thead>
     <tbody>
         {% for r in results %}
-        <tr>
+        <tr data-athlete="{{ r.first_name }} {{ r.last_name }}">
             <td class="rank">{{ r.place }}</td>
             <td>{{ r.first_name }} {{ r.last_name }}</td>
             <td>{{ r.school }}</td>
@@ -70,6 +70,16 @@
 <p>No results found for this selection.</p>
 {% endif %}
 
+<style>
+    @keyframes highlight-fade {
+        0% { background-color: rgba(255, 220, 100, 0.6); }
+        100% { background-color: transparent; }
+    }
+    tr.highlighted {
+        animation: highlight-fade 2s ease-out;
+    }
+</style>
+
 <script>
     function updateFilters() {
         var gender = document.getElementById('filter-gender').value;
@@ -82,5 +92,18 @@
     document.getElementById('filter-sport').addEventListener('change', updateFilters);
     document.getElementById('filter-division').addEventListener('change', updateFilters);
     document.getElementById('filter-race').addEventListener('change', updateFilters);
+
+    // Highlight athlete row if linked from a dialog
+    var params = new URLSearchParams(window.location.search);
+    var athlete = params.get('athlete');
+    if (athlete) {
+        var rows = document.querySelectorAll('tr[data-athlete]');
+        rows.forEach(function(row) {
+            if (row.dataset.athlete === athlete) {
+                row.classList.add('highlighted');
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    }
 </script>
 {% endblock %}
