@@ -5,7 +5,7 @@ import sys
 from collections import Counter
 
 from .parser import parse_race_csv
-from .db import init_db, get_or_create_event, get_next_race_number, insert_race_results
+from .db import init_db, get_or_create_event, get_next_race_number, insert_race_results, is_file_ingested, mark_file_ingested
 
 DEFAULT_DB = "data/yraa.db"
 
@@ -31,19 +31,37 @@ def main():
             print(f"No CSV files found in {args.dir}")
             sys.exit(1)
 
-    # Parse all files
+    # Parse all files, skipping already-ingested ones
+    conn = init_db(args.db)
+
     all_results = []
+    skipped_files = []
     for path in files:
+        basename = os.path.basename(path)
+        existing_race = is_file_ingested(conn, basename)
+        if existing_race is not None:
+            skipped_files.append((basename, existing_race))
+            continue
         results = parse_race_csv(path)
         all_results.append((path, results))
 
-    # Initialize database
-    conn = init_db(args.db)
     next_race = get_next_race_number(conn)
 
     # Print preview
     print(f"\nDatabase: {args.db}")
-    print(f"Files to ingest: {len(files)}")
+
+    if skipped_files:
+        print(f"Already ingested ({len(skipped_files)} files):")
+        for basename, race_num in skipped_files:
+            print(f"  Race #{race_num}: {basename}")
+        print()
+
+    if not all_results:
+        print("No new files to ingest.")
+        conn.close()
+        sys.exit(0)
+
+    print(f"New files to ingest: {len(all_results)}")
     print()
 
     for i, (path, results) in enumerate(all_results):
@@ -96,6 +114,7 @@ def main():
 
         event_id = get_or_create_event(conn, event_date)
         inserted, skipped = insert_race_results(conn, results, event_id, race_num)
+        mark_file_ingested(conn, basename, race_num)
         print(f"  Race #{race_num} ({basename}): {inserted} inserted, {skipped} skipped")
 
     conn.close()

@@ -29,6 +29,12 @@ CREATE TABLE IF NOT EXISTS race_results (
     created_at TEXT DEFAULT (datetime('now')),
     UNIQUE(race_number, gender, sport, division, first_name, last_name)
 );
+
+CREATE TABLE IF NOT EXISTS ingested_files (
+    filename TEXT PRIMARY KEY,
+    race_number INTEGER NOT NULL,
+    created_at TEXT DEFAULT (datetime('now'))
+);
 """
 
 
@@ -67,6 +73,23 @@ def get_next_race_number(conn):
     row = conn.execute("SELECT MAX(race_number) as m FROM race_results").fetchone()
     current_max = row["m"] if row["m"] is not None else 0
     return current_max + 1
+
+
+def is_file_ingested(conn, filename):
+    """Check if a file has already been ingested."""
+    row = conn.execute(
+        "SELECT race_number FROM ingested_files WHERE filename = ?", (filename,)
+    ).fetchone()
+    return row["race_number"] if row else None
+
+
+def mark_file_ingested(conn, filename, race_number):
+    """Record that a file has been ingested with a given race number."""
+    conn.execute(
+        "INSERT OR IGNORE INTO ingested_files (filename, race_number) VALUES (?, ?)",
+        (filename, race_number),
+    )
+    conn.commit()
 
 
 def insert_race_results(conn, results, event_id, race_number):
