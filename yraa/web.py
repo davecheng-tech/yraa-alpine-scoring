@@ -60,7 +60,15 @@ def home(request: Request):
 
 
 @app.get("/races", response_class=HTMLResponse)
-def races_page(request: Request, gender: str = None, sport: str = None, division: str = None, race: int = None):
+def races_page(request: Request, gender: str = None, sport: str = None, division: str = None, race: str = None):
+    # Parse race number safely (may be empty string from filters)
+    race_num = None
+    if race:
+        try:
+            race_num = int(race)
+        except ValueError:
+            pass
+
     conn = _get_db()
     race_list = get_race_list(conn)
 
@@ -79,16 +87,16 @@ def races_page(request: Request, gender: str = None, sport: str = None, division
 
     # Get available races for the selected category
     category_races = race_list.get((gender, sport, division), [])
-    if not race and category_races:
-        race = category_races[0]["seq"]
+    if not race_num and category_races:
+        race_num = category_races[0]["seq"]
 
     # Fetch results
     results = []
     event_date = None
-    if gender and sport and division and race:
-        results = get_race_results(conn, gender, sport, division, race)
+    if gender and sport and division and race_num:
+        results = get_race_results(conn, gender, sport, division, race_num)
         for cr in category_races:
-            if cr["seq"] == race:
+            if cr["seq"] == race_num:
                 event_date = cr["event_date"]
                 break
 
@@ -104,7 +112,7 @@ def races_page(request: Request, gender: str = None, sport: str = None, division
         "selected_gender": gender,
         "selected_sport": sport,
         "selected_division": division,
-        "selected_race": race,
+        "selected_race": race_num,
         "event_date": event_date,
     })
 
