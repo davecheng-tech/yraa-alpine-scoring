@@ -54,7 +54,7 @@ Key modules in `yraa/`:
 
 ## Data Directory Structure
 
-- `data/samples/` — Sample CSVs for testing (gitignored, local-only)
+- `data/samples/` — Sample/reference CSVs for ingest and legacy CLI formats (in git)
 - `data/raw/` — Production race CSVs (gitignored, local-only)
 - `data/yraa.db` — SQLite database (gitignored, regenerated on ingest)
 

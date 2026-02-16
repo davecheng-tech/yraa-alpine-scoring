@@ -210,4 +210,3 @@ __marimo__/
 *.db
 data/raw/*
 !data/raw/.gitkeep
-data/samples/
