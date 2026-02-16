@@ -208,4 +208,5 @@ __marimo__/
 
 # YRAA database and production data
 *.db
-data/raw/
+data/raw/*
+!data/raw/.gitkeep
