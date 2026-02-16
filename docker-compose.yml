@@ -27,6 +27,6 @@ services:
       - YRAA_DB_PATH=/app/data/yraa-dev.db
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.yraa-dev.rule=Host(`dev.yraa.davecheng.com`)"
+      - "traefik.http.routers.yraa-dev.rule=Host(`yraa-dev.davecheng.com`)"
       - "traefik.http.routers.yraa-dev.entrypoints=websecure"
       - "traefik.http.routers.yraa-dev.tls.certresolver=myresolver"
