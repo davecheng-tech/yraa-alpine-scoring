@@ -55,7 +55,8 @@ def calculate_team_scores(results: List[RaceResult]) -> List[TeamScore]:
             )
         )
 
-    # Rank descending
+    # Remove zero-scoring teams, rank descending
+    team_scores = [t for t in team_scores if t.total_points > 0]
     team_scores.sort(key=lambda t: t.total_points, reverse=True)
 
     return team_scores

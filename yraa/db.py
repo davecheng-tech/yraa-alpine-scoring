@@ -198,6 +198,8 @@ def get_individual_leaderboard(conn, gender, sport, division):
         by_points = sorted(race_points, key=lambda x: x["points"], reverse=True)
         top = sorted(by_points[:top_n], key=lambda x: x["race_number"])
         total = sum(r["points"] for r in top)
+        if total == 0:
+            continue
         leaderboard.append({
             "first_name": first_name,
             "last_name": last_name,
