@@ -58,7 +58,7 @@
         <select id="filter-athlete">
             <option value="">All Athletes</option>
             {% for a in athletes_list %}
-            <option value="{{ a }}"{% if a == selected_athlete %} selected{% endif %}>{{ a }}</option>
+            <option value="{{ a.value }}"{% if a.value == selected_athlete %} selected{% endif %}>{{ a.label }}</option>
             {% endfor %}
         </select>
     </label>
