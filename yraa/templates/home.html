@@ -15,15 +15,11 @@
     </tbody>
 </table>
 
-{% for sport in ['ski', 'snowboard'] %}
-<h3>{{ sport|title }}</h3>
 <div class="grid">
-    {% for gender in ['girls', 'boys'] %}
-    <a href="/team/{{ gender }}/{{ sport }}" role="button" class="outline">{{ gender|title }} Team</a>
-    <a href="/individual/{{ gender }}/{{ sport }}/hs" role="button" class="outline secondary">{{ gender|title }} Individual</a>
+    {% for cat in categories %}
+    <a href="/{{ cat.gender }}/{{ cat.sport }}" role="button" class="outline">{{ cat.gender|title }} {{ cat.sport|title }}</a>
     {% endfor %}
 </div>
-{% endfor %}
 {% else %}
 <p>No results yet. Check back soon!</p>
 {% endif %}

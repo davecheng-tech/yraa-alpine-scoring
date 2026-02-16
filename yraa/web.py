@@ -1,6 +1,6 @@
 import os
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from .db import get_connection, init_db, get_team_leaderboard, get_individual_leaderboard, get_season_summary
@@ -14,6 +14,7 @@ templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "t
 VALID_GENDERS = ("boys", "girls")
 VALID_SPORTS = ("ski", "snowboard")
 VALID_DIVISIONS = ("open", "hs")
+VALID_TABS = ("hs", "open", "team")
 
 CATEGORIES = [
     {"gender": "girls", "sport": "ski"},
@@ -35,11 +36,8 @@ def _validate_params(gender, sport, division=None):
     return True
 
 
-def _label(gender, sport, division=None):
-    parts = [gender.title(), sport.title()]
-    if division:
-        parts.append("Open" if division == "open" else "HS")
-    return " ".join(parts)
+def _label(gender, sport):
+    return f"{gender.title()} {sport.title()}"
 
 
 @app.on_event("startup")
@@ -59,40 +57,38 @@ def home(request: Request):
     })
 
 
-@app.get("/team/{gender}/{sport}", response_class=HTMLResponse)
-def team_leaderboard(request: Request, gender: str, sport: str):
-    if not _validate_params(gender, sport):
+@app.get("/{gender}/{sport}", response_class=RedirectResponse)
+def category_redirect(gender: str, sport: str):
+    if gender not in VALID_GENDERS or sport not in VALID_SPORTS:
+        return HTMLResponse("Invalid parameters", status_code=404)
+    return RedirectResponse(url=f"/{gender}/{sport}/hs", status_code=307)
+
+
+@app.get("/{gender}/{sport}/{tab}", response_class=HTMLResponse)
+def category_page(request: Request, gender: str, sport: str, tab: str):
+    if gender not in VALID_GENDERS or sport not in VALID_SPORTS or tab not in VALID_TABS:
         return HTMLResponse("Invalid parameters", status_code=404)
     conn = _get_db()
-    teams = get_team_leaderboard(conn, gender, sport)
+    if tab == "team":
+        teams = get_team_leaderboard(conn, gender, sport)
+        athletes = None
+    else:
+        teams = None
+        athletes = get_individual_leaderboard(conn, gender, sport, tab)
     conn.close()
-    return templates.TemplateResponse("team.html", {
+    return templates.TemplateResponse("category.html", {
         "request": request,
         "teams": teams,
+        "athletes": athletes,
         "label": _label(gender, sport),
         "gender": gender,
         "sport": sport,
+        "tab": tab,
         "categories": CATEGORIES,
     })
 
 
-@app.get("/individual/{gender}/{sport}/{division}", response_class=HTMLResponse)
-def individual_leaderboard(request: Request, gender: str, sport: str, division: str):
-    if not _validate_params(gender, sport, division):
-        return HTMLResponse("Invalid parameters", status_code=404)
-    conn = _get_db()
-    athletes = get_individual_leaderboard(conn, gender, sport, division)
-    conn.close()
-    return templates.TemplateResponse("individual.html", {
-        "request": request,
-        "athletes": athletes,
-        "label": _label(gender, sport, division),
-        "gender": gender,
-        "sport": sport,
-        "division": division,
-        "categories": CATEGORIES,
-    })
-
+# --- JSON API routes (unchanged) ---
 
 @app.get("/api/team/{gender}/{sport}")
 def api_team_leaderboard(gender: str, sport: str):

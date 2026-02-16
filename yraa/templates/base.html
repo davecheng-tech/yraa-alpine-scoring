@@ -8,9 +8,7 @@
     <style>
         nav { padding: 0.5rem 0; }
         nav ul { margin: 0; padding: 0; }
-        .nav-section { margin-bottom: 0.25rem; }
-        .nav-section summary { font-weight: 600; font-size: 0.9rem; cursor: pointer; }
-        .nav-links { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; padding: 0.25rem 0 0.25rem 1rem; }
+        .nav-links { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; padding: 0.25rem 0; }
         .nav-links a { font-size: 0.85rem; }
         table { margin-top: 1rem; }
         .rank { width: 3rem; text-align: center; }
@@ -31,6 +29,7 @@
         }
         .division-tabs a:first-child { border-radius: 0.25rem 0 0 0.25rem; }
         .division-tabs a:last-child { border-radius: 0 0.25rem 0.25rem 0; border-left: none; }
+        .division-tabs a:not(:first-child):not(:last-child) { border-left: none; }
         .division-tabs a.active {
             background: var(--pico-primary);
             color: var(--pico-primary-inverse);
@@ -41,17 +40,11 @@
     <main class="container">
         <nav>
             <h1><a href="/" style="text-decoration: none; color: inherit;">YRAA Alpine Scoring</a></h1>
-            {% for sport in ['ski', 'snowboard'] %}
-            <details class="nav-section" open>
-                <summary>{{ sport|title }}</summary>
-                <div class="nav-links">
-                    {% for gender in ['girls', 'boys'] %}
-                    <a href="/team/{{ gender }}/{{ sport }}">{{ gender|title }} Team</a>
-                    <a href="/individual/{{ gender }}/{{ sport }}/hs">{{ gender|title }} Individual</a>
-                    {% endfor %}
-                </div>
-            </details>
-            {% endfor %}
+            <div class="nav-links">
+                {% for cat in categories %}
+                <a href="/{{ cat.gender }}/{{ cat.sport }}">{{ cat.gender|title }} {{ cat.sport|title }}</a>
+                {% endfor %}
+            </div>
         </nav>
         <hr>
         {% block content %}{% endblock %}

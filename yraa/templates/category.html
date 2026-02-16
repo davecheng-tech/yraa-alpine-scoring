@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}{{ label }} — YRAA{% endblock %}
+
+{% block content %}
+<h2>{{ label }}</h2>
+
+<div class="division-tabs">
+    <a href="/{{ gender }}/{{ sport }}/hs"{% if tab == 'hs' %} class="active"{% endif %}>HS</a>
+    <a href="/{{ gender }}/{{ sport }}/open"{% if tab == 'open' %} class="active"{% endif %}>Open</a>
+    <a href="/{{ gender }}/{{ sport }}/team"{% if tab == 'team' %} class="active"{% endif %}>Team</a>
+</div>
+
+{% if tab == 'team' %}
+
+{% if teams %}
+<table>
+    <thead>
+        <tr>
+            <th class="rank">#</th>
+            <th>School</th>
+            <th class="points">Points</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for team in teams %}
+        <tr>
+            <td class="rank">{{ loop.index }}</td>
+            <td>{{ team.school }}</td>
+            <td class="points points-clickable" onclick="showDetail('team-{{ loop.index }}')">{{ '%g' % team.total_points }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% for team in teams %}
+<dialog id="team-{{ loop.index }}">
+    <article>
+        <h4>{{ team.school }}</h4>
+        <p><strong>Total: {{ '%g' % team.total_points }}</strong> (top {{ team.contributing_scores | length }} scores)</p>
+        <ul class="scores-list">
+            {% for s in team.contributing_scores %}
+            <li>{{ '%g' % s.score }} ({{ s.athlete_name }}, Race {{ s.race_number }})</li>
+            {% endfor %}
+        </ul>
+        <footer>
+            <button onclick="this.closest('dialog').close()">Close</button>
+        </footer>
+    </article>
+</dialog>
+{% endfor %}
+
+{% else %}
+<p>No results yet for this category.</p>
+{% endif %}
+
+{% else %}
+
+{% if athletes %}
+<table>
+    <thead>
+        <tr>
+            <th class="rank">#</th>
+            <th>Athlete</th>
+            <th>School</th>
+            <th class="points">Points</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in athletes %}
+        <tr>
+            <td class="rank">{{ a.rank }}</td>
+            <td>{{ a.first_name }} {{ a.last_name }}</td>
+            <td>{{ a.school }}</td>
+            <td class="points points-clickable" onclick="showDetail('athlete-{{ loop.index }}')">{{ a.total_points }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% for a in athletes %}
+<dialog id="athlete-{{ loop.index }}">
+    <article>
+        <h4>{{ a.first_name }} {{ a.last_name }}</h4>
+        <p><strong>Total: {{ a.total_points }}</strong> (top {{ a.top_results | length }} of {{ a.race_count }} race{{ 's' if a.race_count != 1 }})</p>
+        <ul class="scores-list">
+            {% for r in a.top_results %}
+            <li>Race {{ r.race_number }}: {{ r.points }} pts</li>
+            {% endfor %}
+        </ul>
+        <footer>
+            <button onclick="this.closest('dialog').close()">Close</button>
+        </footer>
+    </article>
+</dialog>
+{% endfor %}
+
+{% else %}
+<p>No results yet for this category.</p>
+{% endif %}
+
+{% endif %}
+{% endblock %}
