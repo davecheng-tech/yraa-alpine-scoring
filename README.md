@@ -112,10 +112,13 @@ Per athlete within a gender/sport/division:
 
 ### Leaderboards
 
-12 leaderboards total:
+4 category pages (Girls Ski, Boys Ski, Girls Snowboard, Boys Snowboard), each with 3 tabs:
 
-- **4 team**: girls ski, boys ski, girls snowboard, boys snowboard (Open + HS combined)
-- **8 individual**: girls/boys × ski/snowboard × open/hs
+- **HS** — individual High School division standings
+- **Open** — individual Open division standings
+- **Team** — team standings (Open + HS combined)
+
+URL structure: `/{gender}/{sport}/{tab}` (e.g., `/girls/ski/hs`)
 
 ### Disqualification
 
