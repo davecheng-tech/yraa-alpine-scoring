@@ -411,6 +411,6 @@ def get_athletes(conn, gender, sport, division, school=None):
     if school:
         query += " AND school = ?"
         params.append(school)
-    query += " ORDER BY last_name, first_name"
+    query += " ORDER BY last_name COLLATE NOCASE, first_name COLLATE NOCASE"
     rows = conn.execute(query, params).fetchall()
     return [{"value": f"{r['first_name']} {r['last_name']}", "label": f"{r['last_name']}, {r['first_name']}"} for r in rows]
