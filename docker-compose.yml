@@ -9,11 +9,6 @@ services:
       - ./data:/app/data
     environment:
       - YRAA_DB_PATH=/app/data/yraa.db
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.yraa.rule=Host(`yraa.davecheng.com`)"
-      - "traefik.http.routers.yraa.entrypoints=websecure"
-      - "traefik.http.routers.yraa.tls.certresolver=myresolver"
 
   yraa-dev:
     build: .
@@ -25,8 +20,3 @@ services:
       - ./data:/app/data
     environment:
       - YRAA_DB_PATH=/app/data/yraa-dev.db
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.yraa-dev.rule=Host(`yraa-dev.davecheng.com`)"
-      - "traefik.http.routers.yraa-dev.entrypoints=websecure"
-      - "traefik.http.routers.yraa-dev.tls.certresolver=myresolver"
