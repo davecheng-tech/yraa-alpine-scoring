@@ -21,30 +21,37 @@
         dialog .scores-list { margin: 0; padding: 0 0 0 1.25rem; }
         dialog .scores-list li { padding: 0.15rem 0; }
         h1 { margin-bottom: 0.5rem; }
+        .division-tabs { display: flex; gap: 0; margin-bottom: 1rem; }
+        .division-tabs a {
+            padding: 0.4rem 1rem;
+            font-size: 0.9rem;
+            text-decoration: none;
+            border: 1px solid var(--pico-primary);
+            color: var(--pico-primary);
+        }
+        .division-tabs a:first-child { border-radius: 0.25rem 0 0 0.25rem; }
+        .division-tabs a:last-child { border-radius: 0 0.25rem 0.25rem 0; border-left: none; }
+        .division-tabs a.active {
+            background: var(--pico-primary);
+            color: var(--pico-primary-inverse);
+        }
     </style>
 </head>
 <body>
     <main class="container">
         <nav>
             <h1><a href="/" style="text-decoration: none; color: inherit;">YRAA Alpine Scoring</a></h1>
+            {% for sport in ['ski', 'snowboard'] %}
             <details class="nav-section" open>
-                <summary>Team Leaderboards</summary>
+                <summary>{{ sport|title }}</summary>
                 <div class="nav-links">
-                    {% for c in categories %}
-                    <a href="/team/{{ c.gender }}/{{ c.sport }}">{{ c.gender|title }} {{ c.sport|title }}</a>
+                    {% for gender in ['girls', 'boys'] %}
+                    <a href="/team/{{ gender }}/{{ sport }}">{{ gender|title }} Team</a>
+                    <a href="/individual/{{ gender }}/{{ sport }}/hs">{{ gender|title }} Individual</a>
                     {% endfor %}
                 </div>
             </details>
-            <details class="nav-section" open>
-                <summary>Individual Leaderboards</summary>
-                <div class="nav-links">
-                    {% for c in categories %}
-                    {% for div in ['open', 'hs'] %}
-                    <a href="/individual/{{ c.gender }}/{{ c.sport }}/{{ div }}">{{ c.gender|title }} {{ c.sport|title }} {{ 'Open' if div == 'open' else 'HS' }}</a>
-                    {% endfor %}
-                    {% endfor %}
-                </div>
-            </details>
+            {% endfor %}
         </nav>
         <hr>
         {% block content %}{% endblock %}

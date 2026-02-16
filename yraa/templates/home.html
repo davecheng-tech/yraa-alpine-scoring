@@ -15,21 +15,15 @@
     </tbody>
 </table>
 
-<h3>Team Leaderboards</h3>
+{% for sport in ['ski', 'snowboard'] %}
+<h3>{{ sport|title }}</h3>
 <div class="grid">
-    {% for c in categories %}
-    <a href="/team/{{ c.gender }}/{{ c.sport }}" role="button" class="outline">{{ c.gender|title }} {{ c.sport|title }}</a>
+    {% for gender in ['girls', 'boys'] %}
+    <a href="/team/{{ gender }}/{{ sport }}" role="button" class="outline">{{ gender|title }} Team</a>
+    <a href="/individual/{{ gender }}/{{ sport }}/hs" role="button" class="outline secondary">{{ gender|title }} Individual</a>
     {% endfor %}
 </div>
-
-<h3>Individual Leaderboards</h3>
-<div class="grid">
-    {% for c in categories %}
-    {% for div in ['open', 'hs'] %}
-    <a href="/individual/{{ c.gender }}/{{ c.sport }}/{{ div }}" role="button" class="outline secondary">{{ c.gender|title }} {{ c.sport|title }} {{ 'Open' if div == 'open' else 'HS' }}</a>
-    {% endfor %}
-    {% endfor %}
-</div>
+{% endfor %}
 {% else %}
 <p>No results yet. Check back soon!</p>
 {% endif %}

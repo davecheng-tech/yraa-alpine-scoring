@@ -5,6 +5,11 @@
 {% block content %}
 <h2>{{ label }} — Individual Leaderboard</h2>
 
+<div class="division-tabs">
+    <a href="/individual/{{ gender }}/{{ sport }}/hs"{% if division == 'hs' %} class="active"{% endif %}>HS Division</a>
+    <a href="/individual/{{ gender }}/{{ sport }}/open"{% if division == 'open' %} class="active"{% endif %}>Open Division</a>
+</div>
+
 {% if athletes %}
 <table>
     <thead>
