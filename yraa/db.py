@@ -108,6 +108,15 @@ def get_individual_leaderboard(conn, gender, sport, division):
     total_races = _count_races(conn, gender, sport, division)
     top_n = 4 if total_races >= 6 else 3
 
+    # Build a mapping from global race_number to sequential category race number
+    distinct_races = conn.execute(
+        """SELECT DISTINCT race_number FROM race_results
+           WHERE gender = ? AND sport = ? AND division = ?
+           ORDER BY race_number""",
+        (gender, sport, division),
+    ).fetchall()
+    race_seq = {r["race_number"]: i + 1 for i, r in enumerate(distinct_races)}
+
     rows = conn.execute(
         """SELECT first_name, last_name, school, race_number, points
            FROM race_results
@@ -121,7 +130,7 @@ def get_individual_leaderboard(conn, gender, sport, division):
     athlete_school = {}
     for row in rows:
         key = (row["first_name"], row["last_name"])
-        athletes[key].append({"race_number": row["race_number"], "points": row["points"]})
+        athletes[key].append({"race_number": race_seq[row["race_number"]], "points": row["points"]})
         athlete_school[key] = row["school"]
 
     leaderboard = []
