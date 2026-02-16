@@ -13,7 +13,6 @@
             <th>Athlete</th>
             <th>School</th>
             <th class="points">Points</th>
-            <th>Races</th>
         </tr>
     </thead>
     <tbody>
@@ -22,12 +21,29 @@
             <td class="rank">{{ loop.index }}</td>
             <td>{{ a.first_name }} {{ a.last_name }}</td>
             <td>{{ a.school }}</td>
-            <td class="points">{{ a.total_points }}</td>
-            <td>{{ a.race_count }}</td>
+            <td class="points points-clickable" onclick="showDetail('athlete-{{ loop.index }}')">{{ a.total_points }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+{% for a in athletes %}
+<dialog id="athlete-{{ loop.index }}">
+    <article>
+        <h4>{{ a.first_name }} {{ a.last_name }}</h4>
+        <p><strong>Total: {{ a.total_points }}</strong> (top {{ a.top_results | length }} of {{ a.race_count }} race{{ 's' if a.race_count != 1 }})</p>
+        <ul class="scores-list">
+            {% for r in a.top_results %}
+            <li>Race {{ r.race_number }}: {{ r.points }} pts</li>
+            {% endfor %}
+        </ul>
+        <footer>
+            <button onclick="this.closest('dialog').close()">Close</button>
+        </footer>
+    </article>
+</dialog>
+{% endfor %}
+
 {% else %}
 <p>No results yet for this category.</p>
 {% endif %}

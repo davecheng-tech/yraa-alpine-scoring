@@ -12,7 +12,6 @@
             <th class="rank">#</th>
             <th>School</th>
             <th class="points">Points</th>
-            <th>Contributing Scores</th>
         </tr>
     </thead>
     <tbody>
@@ -20,12 +19,29 @@
         <tr>
             <td class="rank">{{ loop.index }}</td>
             <td>{{ team.school }}</td>
-            <td class="points">{{ '%g' % team.total_points }}</td>
-            <td>{{ team.contributing_scores | map('int') | join(', ') }}</td>
+            <td class="points points-clickable" onclick="showDetail('team-{{ loop.index }}')">{{ '%g' % team.total_points }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+{% for team in teams %}
+<dialog id="team-{{ loop.index }}">
+    <article>
+        <h4>{{ team.school }}</h4>
+        <p><strong>Total: {{ '%g' % team.total_points }}</strong> (top {{ team.contributing_scores | length }} scores)</p>
+        <ul class="scores-list">
+            {% for score in team.contributing_scores %}
+            <li>{{ '%g' % score }}</li>
+            {% endfor %}
+        </ul>
+        <footer>
+            <button onclick="this.closest('dialog').close()">Close</button>
+        </footer>
+    </article>
+</dialog>
+{% endfor %}
+
 {% else %}
 <p>No results yet for this category.</p>
 {% endif %}

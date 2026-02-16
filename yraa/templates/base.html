@@ -15,6 +15,11 @@
         table { margin-top: 1rem; }
         .rank { width: 3rem; text-align: center; }
         .points { text-align: right; }
+        .points-clickable { cursor: pointer; text-decoration: underline; text-decoration-style: dotted; }
+        dialog { max-width: 400px; }
+        dialog h4 { margin-bottom: 0.5rem; }
+        dialog .scores-list { margin: 0; padding: 0; list-style: none; }
+        dialog .scores-list li { padding: 0.15rem 0; }
         h1 { margin-bottom: 0.5rem; }
     </style>
 </head>
@@ -44,5 +49,19 @@
         <hr>
         {% block content %}{% endblock %}
     </main>
+    <script>
+        function showDetail(id) {
+            document.getElementById(id).showModal();
+        }
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName === 'DIALOG') {
+                var rect = e.target.getBoundingClientRect();
+                if (e.clientX < rect.left || e.clientX > rect.right ||
+                    e.clientY < rect.top || e.clientY > rect.bottom) {
+                    e.target.close();
+                }
+            }
+        });
+    </script>
 </body>
 </html>
