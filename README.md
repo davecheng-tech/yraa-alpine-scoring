@@ -193,3 +193,7 @@ data/
 - **CSV export** — Export computed leaderboards as CSV (place, name, school, per-race points, total) for each category/division combination, for archival in Google Sheets. CLI first, then web.
 - **Race results view** — Browse formatted results for individual races (times, places, notes), not just championship points
 - **Admin interface** — Authenticated web UI for uploading race result CSVs, replacing the CLI ingest workflow
+
+## To Do
+
+- **Remove legacy CLI and floating-point score support** — The legacy CLI (`cli.py`, `io.py`) and floating-point point handling exist to support older pre-computed spreadsheets where points were sometimes manually split (e.g., 20.5). The current ingest pipeline assigns integer points strictly from the regulations' place-to-points tables, making this unnecessary. Remove once the ingest pipeline is fully validated and the legacy CLI is no longer needed.
