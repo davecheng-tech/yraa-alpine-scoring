@@ -11,7 +11,7 @@
         <span class="filter-chips">
             <span class="chip">{{ selected_group|title }}</span>
             <span class="chip">{{ selected_sport|title }}</span>
-            <span class="chip">{{ selected_division|upper }}</span>
+            <span class="chip">{{ 'HS' if selected_division == 'hs' else selected_division|title }}</span>
             {%- if selected_race == "all" %}
             <span class="chip">All Races</span>
             {%- elif selected_race %}
@@ -47,7 +47,7 @@
             Division
             <select id="filter-division">
                 {% for d in divisions %}
-                <option value="{{ d }}"{% if d == selected_division %} selected{% endif %}>{{ d|upper }}</option>
+                <option value="{{ d }}"{% if d == selected_division %} selected{% endif %}>{{ 'HS' if d == 'hs' else d|title }}</option>
                 {% endfor %}
             </select>
         </label>
