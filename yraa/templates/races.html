@@ -5,64 +5,75 @@
 {% block content %}
 <h2>Race Results</h2>
 
-<div class="grid">
-    <label>
-        Group
-        <select id="filter-group">
-            {% for g in groups %}
-            <option value="{{ g }}"{% if g == selected_group %} selected{% endif %}>{{ g|title }}</option>
-            {% endfor %}
-        </select>
-    </label>
-    <label>
-        Sport
-        <select id="filter-sport">
-            {% for s in sports %}
-            <option value="{{ s }}"{% if s == selected_sport %} selected{% endif %}>{{ s|title }}</option>
-            {% endfor %}
-        </select>
-    </label>
-    <label>
-        Division
-        <select id="filter-division">
-            {% for d in divisions %}
-            <option value="{{ d }}"{% if d == selected_division %} selected{% endif %}>{{ d|upper }}</option>
-            {% endfor %}
-        </select>
-    </label>
-    <label>
-        Race
-        <select id="filter-race">
-            {% if has_narrowing_filter %}
-            <option value="all"{% if selected_race == "all" %} selected{% endif %}>All Races</option>
-            {% endif %}
-            {% for r in races %}
-            <option value="{{ r.seq }}"{% if r.seq == selected_race %} selected{% endif %}>Race {{ r.seq }} ({{ r.event_date }})</option>
-            {% endfor %}
-        </select>
-    </label>
-</div>
+<details class="filters-panel"{% if filters_open %} open{% endif %}>
+    <summary>
+        {{ selected_group|title }} {{ selected_sport|title }} — {{ selected_division|upper }}
+        {% if selected_race == "all" %} — All Races
+        {% elif selected_race %} — Race {{ selected_race }}
+        {% endif %}
+        {% if selected_school %} — {{ selected_school }}{% endif %}
+        {% if selected_athlete %} — {{ selected_athlete }}{% endif %}
+    </summary>
 
-<div class="grid">
-    <label>
-        School
-        <select id="filter-school">
-            <option value="">All Schools</option>
-            {% for s in schools %}
-            <option value="{{ s }}"{% if s == selected_school %} selected{% endif %}>{{ s }}</option>
-            {% endfor %}
-        </select>
-    </label>
-    <label>
-        Athlete
-        <select id="filter-athlete">
-            <option value="">All Athletes</option>
-            {% for a in athletes_list %}
-            <option value="{{ a.value }}"{% if a.value == selected_athlete %} selected{% endif %}>{{ a.label }}</option>
-            {% endfor %}
-        </select>
-    </label>
-</div>
+    <div class="grid">
+        <label>
+            Group
+            <select id="filter-group">
+                {% for g in groups %}
+                <option value="{{ g }}"{% if g == selected_group %} selected{% endif %}>{{ g|title }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            Sport
+            <select id="filter-sport">
+                {% for s in sports %}
+                <option value="{{ s }}"{% if s == selected_sport %} selected{% endif %}>{{ s|title }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            Division
+            <select id="filter-division">
+                {% for d in divisions %}
+                <option value="{{ d }}"{% if d == selected_division %} selected{% endif %}>{{ d|upper }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            Race
+            <select id="filter-race">
+                {% if has_narrowing_filter %}
+                <option value="all"{% if selected_race == "all" %} selected{% endif %}>All Races</option>
+                {% endif %}
+                {% for r in races %}
+                <option value="{{ r.seq }}"{% if r.seq == selected_race %} selected{% endif %}>Race {{ r.seq }} ({{ r.event_date }})</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+
+    <div class="grid">
+        <label>
+            School
+            <select id="filter-school">
+                <option value="">All Schools</option>
+                {% for s in schools %}
+                <option value="{{ s }}"{% if s == selected_school %} selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            Athlete
+            <select id="filter-athlete">
+                <option value="">All Athletes</option>
+                {% for a in athletes_list %}
+                <option value="{{ a.value }}"{% if a.value == selected_athlete %} selected{% endif %}>{{ a.label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+</details>
 
 {% if results %}
 {% if event_date %}
@@ -104,7 +115,8 @@
             division: document.getElementById('filter-division').value,
             race: document.getElementById('filter-race').value,
             school: document.getElementById('filter-school').value,
-            athlete: document.getElementById('filter-athlete').value
+            athlete: document.getElementById('filter-athlete').value,
+            filters: 'open'
         };
         Object.assign(params, overrides || {});
         var parts = [];

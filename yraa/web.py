@@ -60,7 +60,7 @@ def home(request: Request):
 
 
 @app.get("/races", response_class=HTMLResponse)
-def races_page(request: Request, group: str = None, sport: str = None, division: str = None, race: str = None, school: str = None, athlete: str = None):
+def races_page(request: Request, group: str = None, sport: str = None, division: str = None, race: str = None, school: str = None, athlete: str = None, filters: str = None):
     # Parse race number safely (may be empty string or "all")
     race_num = None
     all_races = False
@@ -142,6 +142,7 @@ def races_page(request: Request, group: str = None, sport: str = None, division:
         "selected_athlete": athlete or "",
         "event_date": event_date,
         "has_narrowing_filter": has_narrowing_filter,
+        "filters_open": filters == "open",
     })
 
 
