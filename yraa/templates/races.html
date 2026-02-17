@@ -16,7 +16,7 @@
                 {%- if selected_race == "all" %}
             <span class="chip">All Races</span>
                 {%- elif selected_race %}
-            <span class="chip">Race {{ selected_race }}{% if event_date %} ({{ event_date|friendly_date }}){% endif %}</span>
+            <span class="chip">Race {{ selected_race }}{% if event_date %} ({{ event_date }}){% endif %}</span>
                 {%- endif %}
             {%- else %}
             <span class="chip">No Races</span>
@@ -62,7 +62,7 @@
                 <option value="all"{% if selected_race == "all" %} selected{% endif %}>All Races</option>
                 {% endif %}
                 {% for r in races %}
-                <option value="{{ r.seq }}"{% if r.seq == selected_race %} selected{% endif %}>Race {{ r.seq }} ({{ r.event_date|friendly_date }})</option>
+                <option value="{{ r.seq }}"{% if r.seq == selected_race %} selected{% endif %}>Race {{ r.seq }} ({{ r.event_date }})</option>
                 {% endfor %}
             </select>
         </label>
