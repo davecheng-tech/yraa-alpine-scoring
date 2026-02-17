@@ -7,12 +7,12 @@
 
 <details class="filters-panel"{% if filters_open %} open{% endif %}>
     <summary>
-        {{ selected_group|title }} {{ selected_sport|title }} — {{ selected_division|upper }}
-        {% if selected_race == "all" %} — All Races
-        {% elif selected_race %} — Race {{ selected_race }}
-        {% endif %}
-        {% if selected_school %} — {{ selected_school }}{% endif %}
-        {% if selected_athlete %} — {{ selected_athlete }}{% endif %}
+        Filters: {{ selected_group|title }} {{ selected_sport|title }} — {{ selected_division|upper }}
+        {%- if selected_race == "all" %} — All Races
+        {%- elif selected_race %} — Race {{ selected_race }}{% if event_date %} ({{ event_date }}){% endif %}
+        {%- endif %}
+        {%- if selected_school %} — {{ selected_school }}{% endif %}
+        {%- if selected_athlete %} — {{ selected_athlete }}{% endif %}
     </summary>
 
     <div class="grid">
@@ -76,9 +76,6 @@
 </details>
 
 {% if results %}
-{% if event_date %}
-<p><small>{{ selected_group|title }} {{ selected_sport|title }} — {{ selected_division|upper }} Division — Race {{ selected_race }} ({{ event_date }})</small></p>
-{% endif %}
 <table>
     <thead>
         <tr>
