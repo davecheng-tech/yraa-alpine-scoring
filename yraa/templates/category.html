@@ -23,15 +23,22 @@
         </tr>
     </thead>
     <tbody>
+        {% set ns = namespace(rank=0, has_excluded=false) %}
         {% for team in teams %}
+        {% set is_excluded = team.school.startswith("Bill Crothers") %}
+        {% if is_excluded %}{% set ns.has_excluded = true %}{% endif %}
         <tr>
-            <td class="rank">{{ loop.index }}</td>
+            <td class="rank">{% if not is_excluded %}{% set ns.rank = ns.rank + 1 %}{{ ns.rank }}{% endif %}</td>
             <td>{{ team.school }}</td>
             <td class="points points-clickable" onclick="showDetail('team-{{ loop.index }}')">{{ '%g' % team.total_points }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+{% if ns.has_excluded %}
+<p><small>As per Sec. 7 of the YRAA alpine skiing playing regulations, Bill Crothers Secondary School is ineligible to win team awards and therefore excluded from team championship ranking.</small></p>
+{% endif %}
 
 {% for team in teams %}
 <dialog id="team-{{ loop.index }}">
