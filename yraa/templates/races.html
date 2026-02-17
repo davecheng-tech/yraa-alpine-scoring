@@ -12,10 +12,14 @@
             <span class="chip">{{ selected_group|title }}</span>
             <span class="chip">{{ selected_sport|title }}</span>
             <span class="chip">{{ 'HS' if selected_division == 'hs' else selected_division|title }}</span>
-            {%- if selected_race == "all" %}
+            {%- if races %}
+                {%- if selected_race == "all" %}
             <span class="chip">All Races</span>
-            {%- elif selected_race %}
+                {%- elif selected_race %}
             <span class="chip">Race {{ selected_race }}{% if event_date %} ({{ event_date }}){% endif %}</span>
+                {%- endif %}
+            {%- else %}
+            <span class="chip">No Races</span>
             {%- endif %}
             {%- if selected_school %}
             <span class="chip">{{ selected_school }}</span>
