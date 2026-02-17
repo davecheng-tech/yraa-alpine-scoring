@@ -23,9 +23,11 @@
         </tr>
     </thead>
     <tbody>
+        {% set ns = namespace(rank=0) %}
         {% for team in teams %}
+        {% set is_excluded = team.school.startswith("Bill Crothers") %}
         <tr>
-            <td class="rank">{{ loop.index }}</td>
+            <td class="rank">{% if not is_excluded %}{% set ns.rank = ns.rank + 1 %}{{ ns.rank }}{% endif %}</td>
             <td>{{ team.school }}</td>
             <td class="points points-clickable" onclick="showDetail('team-{{ loop.index }}')">{{ '%g' % team.total_points }}</td>
         </tr>
