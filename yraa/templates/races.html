@@ -84,7 +84,7 @@
         <tr data-athlete="{{ r.first_name }} {{ r.last_name }}">
             {% if selected_race == "all" %}<td class="rank">{{ r.race_seq }}</td>{% endif %}
             <td class="rank">{{ r.place }}</td>
-            <td>{{ r.first_name }} {{ r.last_name }}</td>
+            <td>{{ r.first_name }} {{ r.last_name|upper }}</td>
             <td>{{ r.school }}</td>
             <td class="points">{{ '%.2f' % r.time_seconds if r.time_seconds else '' }}</td>
             <td class="points">{{ r.points }}</td>

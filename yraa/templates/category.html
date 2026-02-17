@@ -70,7 +70,7 @@
         {% for a in athletes %}
         <tr>
             <td class="rank">{{ a.rank }}</td>
-            <td>{{ a.first_name }} {{ a.last_name }}</td>
+            <td>{{ a.first_name }} {{ a.last_name|upper }}</td>
             <td>{{ a.school }}</td>
             <td class="points points-clickable" onclick="showDetail('athlete-{{ loop.index }}')">{{ a.total_points }}</td>
         </tr>
@@ -81,7 +81,7 @@
 {% for a in athletes %}
 <dialog id="athlete-{{ loop.index }}">
     <article>
-        <h4>{{ a.first_name }} {{ a.last_name }}</h4>
+        <h4>{{ a.first_name }} {{ a.last_name|upper }}</h4>
         <p><strong>Total: {{ a.total_points }}</strong> (top {{ a.top_results | length }} of {{ a.race_count }} race{{ 's' if a.race_count != 1 }})</p>
         <ul class="scores-list">
             {% for r in a.all_results %}
