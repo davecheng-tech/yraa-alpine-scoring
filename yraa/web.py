@@ -1,6 +1,7 @@
 import csv
 import io
 import os
+from datetime import datetime
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
@@ -12,6 +13,19 @@ DB_PATH = os.environ.get("YRAA_DB_PATH", "data/yraa.db")
 app = FastAPI(title="YRAA Alpine Scoring")
 
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
+
+
+def _friendly_date(value):
+    """Convert 'YYYY-MM-DD' to 'Jan. 8, 2026' style."""
+    try:
+        dt = datetime.strptime(value, "%Y-%m-%d")
+        month = dt.strftime("%b")
+        return f"{month}. {dt.day}, {dt.year}"
+    except (ValueError, TypeError):
+        return value
+
+
+templates.env.filters["friendly_date"] = _friendly_date
 
 VALID_GENDERS = ("boys", "girls")
 VALID_SPORTS = ("ski", "snowboard")
