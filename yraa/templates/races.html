@@ -28,7 +28,7 @@
             {%- if selected_athlete %}
             <span class="chip">{{ selected_athlete|caps_last_name }}</span>
             {%- endif %}
-            <span class="chip" id="chip-time-display">{{ "±Diff" if diff_allowed else "Time" }}</span>
+            <span class="chip" id="chip-time-display">{{ "+ Diff" if diff_allowed else "Time" }}</span>
         </span>
     </summary>
 
@@ -96,7 +96,7 @@
             Time Display
             <select id="filter-time-display"{% if not diff_allowed %} disabled{% endif %}>
                 <option value="differential"{% if diff_allowed %} selected{% endif %}>Differential (+0.00)</option>
-                <option value="absolute"{% if not diff_allowed %} selected{% endif %}>Absolute Time</option>
+                <option value="absolute"{% if not diff_allowed %} selected{% endif %}>Actual Time</option>
             </select>
         </label>
     </div>
@@ -207,7 +207,7 @@
         });
 
         if (chipTimeDisplay) {
-            chipTimeDisplay.textContent = mode === 'differential' ? '±Diff' : 'Time';
+            chipTimeDisplay.textContent = mode === 'differential' ? '+ Diff' : 'Time';
         }
     }
 
