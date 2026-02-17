@@ -23,9 +23,10 @@
         </tr>
     </thead>
     <tbody>
-        {% set ns = namespace(rank=0) %}
+        {% set ns = namespace(rank=0, has_excluded=false) %}
         {% for team in teams %}
         {% set is_excluded = team.school.startswith("Bill Crothers") %}
+        {% if is_excluded %}{% set ns.has_excluded = true %}{% endif %}
         <tr>
             <td class="rank">{% if not is_excluded %}{% set ns.rank = ns.rank + 1 %}{{ ns.rank }}{% endif %}</td>
             <td>{{ team.school }}</td>
@@ -35,7 +36,7 @@
     </tbody>
 </table>
 
-{% if teams | map(attribute='school') | select('startswith', 'Bill Crothers') | list %}
+{% if ns.has_excluded %}
 <p><small>As per YRAA alpine skiing playing regulations Sec. 7, Bill Crothers Secondary School is ineligible to win team awards and is therefore excluded from team championship ranking.</small></p>
 {% endif %}
 
