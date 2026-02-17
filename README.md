@@ -192,6 +192,10 @@ data/
 - **Bill Crothers exclusion toggle** — UI option to exclude Bill Crothers SS from team standings per Regulation 7 (ineligible for team awards)
 - **Admin interface** — Authenticated web UI for uploading race result CSVs, replacing the CLI ingest workflow
 - **Race results notes** — Store DNS/DNF/DQ notes in the database schema and display them in the race results view
+- **Race result time differentials** — Toggle to display times relative to the leader (e.g., +1.02) instead of absolute times
+- **Include DQ/DNF/DNS in race results** — Show disqualified, did-not-finish, and did-not-start athletes in the race results view
+- **Race results CSV export** — Export any race result view as CSV, retaining active filters
+- **Team championship points CSV export** — Export team championship points view as CSV
 
 ## To Do
 
