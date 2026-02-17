@@ -78,6 +78,10 @@
     </style>
 </head>
 <body>
+    {% if yraa_env == "dev" %}
+    <div style="position: fixed; top: 0; left: 0; right: 0; height: 24px; background: #e67e22; color: #fff; text-align: center; font-size: 0.75rem; font-weight: 700; line-height: 24px; z-index: 9999; letter-spacing: 0.05em;">DEV ENVIRONMENT</div>
+    <style>body { padding-top: 24px; }</style>
+    {% endif %}
     <main class="container">
         <nav>
             <h1><a href="/" style="text-decoration: none; color: inherit;">YRAA Alpine Scoring</a></h1>

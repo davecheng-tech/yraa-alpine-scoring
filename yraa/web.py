@@ -24,6 +24,7 @@ def _caps_last_name(value):
 
 
 templates.env.filters["caps_last_name"] = _caps_last_name
+templates.env.globals["yraa_env"] = os.environ.get("YRAA_ENV", "")
 
 VALID_GENDERS = ("boys", "girls")
 VALID_SPORTS = ("ski", "snowboard")

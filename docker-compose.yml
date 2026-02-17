@@ -20,3 +20,4 @@ services:
       - ./data:/app/data
     environment:
       - YRAA_DB_PATH=/app/data/yraa-dev.db
+      - YRAA_ENV=dev
