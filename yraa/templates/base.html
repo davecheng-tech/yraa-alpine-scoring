@@ -28,6 +28,16 @@
             list-style: revert;
         }
         .filters-panel summary::after { display: none; }
+        .filter-chips { display: inline-flex; flex-wrap: wrap; gap: 0.3rem; margin-left: 0.4rem; vertical-align: middle; }
+        .chip {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 400;
+            padding: 0.1rem 0.5rem;
+            border-radius: 1rem;
+            background: var(--pico-secondary-background);
+            color: var(--pico-secondary-inverse);
+        }
         .filters-panel .grid { margin-top: 0.75rem; }
         .division-tabs { display: flex; gap: 0; margin-bottom: 1rem; }
         .division-tabs a {

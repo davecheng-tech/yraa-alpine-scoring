@@ -7,12 +7,23 @@
 
 <details class="filters-panel"{% if filters_open %} open{% endif %}>
     <summary>
-        Filters: {{ selected_group|title }} {{ selected_sport|title }} — {{ selected_division|upper }}
-        {%- if selected_race == "all" %} — All Races
-        {%- elif selected_race %} — Race {{ selected_race }}{% if event_date %} ({{ event_date }}){% endif %}
-        {%- endif %}
-        {%- if selected_school %} — {{ selected_school }}{% endif %}
-        {%- if selected_athlete %} — {{ selected_athlete }}{% endif %}
+        Filters
+        <span class="filter-chips">
+            <span class="chip">{{ selected_group|title }}</span>
+            <span class="chip">{{ selected_sport|title }}</span>
+            <span class="chip">{{ selected_division|upper }}</span>
+            {%- if selected_race == "all" %}
+            <span class="chip">All Races</span>
+            {%- elif selected_race %}
+            <span class="chip">Race {{ selected_race }}{% if event_date %} ({{ event_date }}){% endif %}</span>
+            {%- endif %}
+            {%- if selected_school %}
+            <span class="chip">{{ selected_school }}</span>
+            {%- endif %}
+            {%- if selected_athlete %}
+            <span class="chip">{{ selected_athlete }}</span>
+            {%- endif %}
+        </span>
     </summary>
 
     <div class="grid">
