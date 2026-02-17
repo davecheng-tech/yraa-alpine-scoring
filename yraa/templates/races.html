@@ -25,7 +25,7 @@
             <span class="chip">{{ selected_school }}</span>
             {%- endif %}
             {%- if selected_athlete %}
-            <span class="chip">{{ selected_athlete }}</span>
+            <span class="chip">{{ selected_athlete|caps_last_name }}</span>
             {%- endif %}
         </span>
     </summary>

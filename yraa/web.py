@@ -27,6 +27,17 @@ def _friendly_date(value):
 
 templates.env.filters["friendly_date"] = _friendly_date
 
+
+def _caps_last_name(value):
+    """Convert 'First Last' to 'First LAST'."""
+    parts = value.rsplit(" ", 1)
+    if len(parts) == 2:
+        return f"{parts[0]} {parts[1].upper()}"
+    return value
+
+
+templates.env.filters["caps_last_name"] = _caps_last_name
+
 VALID_GENDERS = ("boys", "girls")
 VALID_SPORTS = ("ski", "snowboard")
 VALID_DIVISIONS = ("open", "hs")
