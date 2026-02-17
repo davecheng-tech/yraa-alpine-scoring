@@ -5,13 +5,25 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 
-from .db import get_connection, init_db, get_team_leaderboard, get_individual_leaderboard, get_season_summary, get_race_list, get_race_results
+from .db import get_connection, init_db, get_team_leaderboard, get_individual_leaderboard, get_season_summary, get_race_list, get_race_results, get_schools, get_athletes
 
 DB_PATH = os.environ.get("YRAA_DB_PATH", "data/yraa.db")
 
 app = FastAPI(title="YRAA Alpine Scoring")
 
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
+
+
+
+def _caps_last_name(value):
+    """Convert 'First Last' to 'First LAST'."""
+    parts = value.rsplit(" ", 1)
+    if len(parts) == 2:
+        return f"{parts[0]} {parts[1].upper()}"
+    return value
+
+
+templates.env.filters["caps_last_name"] = _caps_last_name
 
 VALID_GENDERS = ("boys", "girls")
 VALID_SPORTS = ("ski", "snowboard")
@@ -60,10 +72,13 @@ def home(request: Request):
 
 
 @app.get("/races", response_class=HTMLResponse)
-def races_page(request: Request, group: str = None, sport: str = None, division: str = None, race: str = None):
-    # Parse race number safely (may be empty string from filters)
+def races_page(request: Request, group: str = None, sport: str = None, division: str = None, race: str = None, school: str = None, athlete: str = None, filters: str = None):
+    # Parse race number safely (may be empty string or "all")
     race_num = None
-    if race:
+    all_races = False
+    if race == "all":
+        all_races = True
+    elif race:
         try:
             race_num = int(race)
         except ValueError:
@@ -88,18 +103,37 @@ def races_page(request: Request, group: str = None, sport: str = None, division:
 
     # Get available races for the selected category
     category_races = race_list.get((gender, sport, division), [])
-    if not race_num and category_races:
+
+    # Normalize empty strings to None
+    if not school:
+        school = None
+    if not athlete:
+        athlete = None
+
+    # Only default to first race if no school/athlete filter is narrowing results
+    if not race_num and not all_races and category_races:
         race_num = category_races[0]["seq"]
+
+    # Get school and athlete lists for filters
+    schools = []
+    athletes_list = []
+    has_narrowing_filter = bool(school or athlete)
+    if gender and sport and division:
+        schools = get_schools(conn, gender, sport, division)
+        athletes_list = get_athletes(conn, gender, sport, division, school=school if school else None)
 
     # Fetch results
     results = []
     event_date = None
-    if gender and sport and division and race_num:
-        results = get_race_results(conn, gender, sport, division, race_num)
-        for cr in category_races:
-            if cr["seq"] == race_num:
-                event_date = cr["event_date"]
-                break
+    if gender and sport and division:
+        if all_races:
+            results = get_race_results(conn, gender, sport, division, school=school, athlete=athlete)
+        elif race_num:
+            results = get_race_results(conn, gender, sport, division, race_num, school=school, athlete=athlete)
+            for cr in category_races:
+                if cr["seq"] == race_num:
+                    event_date = cr["event_date"]
+                    break
 
     conn.close()
     return templates.TemplateResponse("races.html", {
@@ -110,11 +144,17 @@ def races_page(request: Request, group: str = None, sport: str = None, division:
         "sports": sports,
         "divisions": divisions,
         "races": category_races,
+        "schools": schools,
+        "athletes_list": athletes_list,
         "selected_group": gender,
         "selected_sport": sport,
         "selected_division": division,
-        "selected_race": race_num,
+        "selected_race": "all" if all_races else race_num,
+        "selected_school": school or "",
+        "selected_athlete": athlete or "",
         "event_date": event_date,
+        "has_narrowing_filter": has_narrowing_filter,
+        "filters_open": filters == "open",
     })
 
 
