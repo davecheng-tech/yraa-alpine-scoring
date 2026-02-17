@@ -189,7 +189,6 @@ data/
 
 ## Planned Features
 
-- **Bill Crothers exclusion toggle** — UI option to exclude Bill Crothers SS from team standings per Regulation 7 (ineligible for team awards)
 - **Admin interface** — Authenticated web UI for uploading race result CSVs, replacing the CLI ingest workflow
 - **Race results notes** — Store DNS/DNF/DQ notes in the database schema and display them in the race results view
 - **Include DQ/DNF/DNS in race results** — Show disqualified, did-not-finish, and did-not-start athletes in the race results view
