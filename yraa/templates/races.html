@@ -3,6 +3,7 @@
 {% block title %}Race Results — YRAA{% endblock %}
 
 {% block content %}
+{% set diff_allowed = selected_race != "all" and not selected_school and not selected_athlete %}
 <h2>Race Results</h2>
 
 <details class="filters-panel"{% if filters_open %} open{% endif %}>
@@ -30,7 +31,7 @@
         </span>
     </summary>
 
-    <div class="grid">
+    <div class="grid grid-row1">
         <label>
             Group
             <select id="filter-group">
@@ -68,7 +69,7 @@
         </label>
     </div>
 
-    <div class="grid">
+    <div class="grid grid-row2">
         <label>
             School
             <select id="filter-school">
@@ -85,6 +86,13 @@
                 {% for a in athletes_list %}
                 <option value="{{ a.value }}"{% if a.value == selected_athlete %} selected{% endif %}>{{ a.label }}</option>
                 {% endfor %}
+            </select>
+        </label>
+        <label id="time-display-label"{% if not diff_allowed %} class="disabled-filter"{% endif %}>
+            Time Display
+            <select id="filter-time-display"{% if not diff_allowed %} disabled{% endif %}>
+                <option value="differential"{% if diff_allowed %} selected{% endif %}>Differential (+0.00)</option>
+                <option value="absolute"{% if not diff_allowed %} selected{% endif %}>Actual Time</option>
             </select>
         </label>
     </div>
@@ -109,7 +117,7 @@
             <td class="rank">{{ r.place }}</td>
             <td>{{ r.first_name }} {{ r.last_name|upper }}</td>
             <td>{{ r.school }}</td>
-            <td class="points">{{ '%.2f' % r.time_seconds if r.time_seconds else '' }}</td>
+            <td class="points time-cell" data-time="{{ r.time_seconds if r.time_seconds else '' }}">{{ '%.2f' % r.time_seconds if r.time_seconds else '' }}</td>
             <td class="points">{{ r.points }}</td>
         </tr>
         {% endfor %}
@@ -162,6 +170,46 @@
             window.location.href = buildUrl();
         }
     });
+
+    // --- Time display toggle (differential vs absolute) ---
+    var timeDisplaySelect = document.getElementById('filter-time-display');
+
+    function applyTimeDisplay(mode) {
+        var cells = document.querySelectorAll('.time-cell');
+        if (!cells.length) return;
+
+        // Find the leader time (first row with a valid time)
+        var leaderTime = null;
+        for (var i = 0; i < cells.length; i++) {
+            var t = parseFloat(cells[i].dataset.time);
+            if (!isNaN(t)) { leaderTime = t; break; }
+        }
+
+        cells.forEach(function(td) {
+            var raw = parseFloat(td.dataset.time);
+            if (isNaN(raw)) { td.textContent = ''; return; }
+
+            if (mode === 'differential' && leaderTime !== null) {
+                var diff = raw - leaderTime;
+                if (diff === 0) {
+                    td.textContent = raw.toFixed(2);
+                } else {
+                    td.textContent = '+' + diff.toFixed(2);
+                }
+            } else {
+                td.textContent = raw.toFixed(2);
+            }
+        });
+
+    }
+
+    if (timeDisplaySelect) {
+        timeDisplaySelect.addEventListener('change', function() {
+            applyTimeDisplay(this.value);
+        });
+        // Apply initial mode on page load
+        applyTimeDisplay(timeDisplaySelect.value);
+    }
 
     // Highlight athlete row if linked from a dialog
     var params = new URLSearchParams(window.location.search);
