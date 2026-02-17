@@ -93,13 +93,13 @@ def races_page(request: Request, group: str = None, sport: str = None, division:
     sports = sorted({k[1] for k in race_list})
     divisions = sorted({k[2] for k in race_list})
 
-    # Default to first available if not specified
-    if not gender and genders:
-        gender = genders[0]
-    if not sport and sports:
-        sport = sports[0]
-    if not division and divisions:
-        division = divisions[0]
+    # Default to Girls Ski HS when no filters specified
+    if not gender:
+        gender = "girls" if "girls" in genders else (genders[0] if genders else None)
+    if not sport:
+        sport = "ski" if "ski" in sports else (sports[0] if sports else None)
+    if not division:
+        division = "hs" if "hs" in divisions else (divisions[0] if divisions else None)
 
     # Get available races for the selected category
     category_races = race_list.get((gender, sport, division), [])
@@ -112,7 +112,7 @@ def races_page(request: Request, group: str = None, sport: str = None, division:
 
     # Only default to first race if no school/athlete filter is narrowing results
     if not race_num and not all_races and category_races:
-        race_num = category_races[0]["seq"]
+        race_num = category_races[-1]["seq"]
 
     # Get school and athlete lists for filters
     schools = []
