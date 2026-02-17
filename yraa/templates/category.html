@@ -35,6 +35,10 @@
     </tbody>
 </table>
 
+{% if teams | selectattr('school', 'match', '^Bill Crothers') | list %}
+<p><small>As per YRAA alpine skiing playing regulations Sec. 7, Bill Crothers Secondary School is ineligible to win team awards and is therefore excluded from team championship ranking.</small></p>
+{% endif %}
+
 {% for team in teams %}
 <dialog id="team-{{ loop.index }}">
     <article>
