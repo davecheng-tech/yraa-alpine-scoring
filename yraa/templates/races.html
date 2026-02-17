@@ -28,7 +28,6 @@
             {%- if selected_athlete %}
             <span class="chip">{{ selected_athlete|caps_last_name }}</span>
             {%- endif %}
-            <span class="chip" id="chip-time-display">{{ "+ Diff" if diff_allowed else "Time" }}</span>
         </span>
     </summary>
 
@@ -89,9 +88,6 @@
                 {% endfor %}
             </select>
         </label>
-    </div>
-
-    <div class="grid" style="max-width: 20rem;">
         <label id="time-display-label"{% if not diff_allowed %} class="disabled-filter"{% endif %}>
             Time Display
             <select id="filter-time-display"{% if not diff_allowed %} disabled{% endif %}>
@@ -177,7 +173,6 @@
 
     // --- Time display toggle (differential vs absolute) ---
     var timeDisplaySelect = document.getElementById('filter-time-display');
-    var chipTimeDisplay = document.getElementById('chip-time-display');
 
     function applyTimeDisplay(mode) {
         var cells = document.querySelectorAll('.time-cell');
@@ -206,9 +201,6 @@
             }
         });
 
-        if (chipTimeDisplay) {
-            chipTimeDisplay.textContent = mode === 'differential' ? '+ Diff' : 'Time';
-        }
     }
 
     if (timeDisplaySelect) {
