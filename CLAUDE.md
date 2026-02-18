@@ -18,7 +18,7 @@ python3 -m yraa.ingest --file data/raw/FILE.csv  # single file
 python3 -m yraa.ingest --dir data/raw/ --yes     # skip confirmation
 
 # Run web dashboard (dev)
-YRAA_ENV=dev python3 -m uvicorn yraa.web:app --reload
+YRAA_ENV=dev python3 -m uvicorn yraa.web:app --reload --port 8000
 
 # Docker
 docker compose up -d
