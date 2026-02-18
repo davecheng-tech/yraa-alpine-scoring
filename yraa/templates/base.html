@@ -8,7 +8,7 @@
     <style>
         main.container { max-width: 900px; padding-left: 1.25rem; padding-right: 1.25rem; }
         :root { --pico-font-size: 100%; }
-        nav { padding: 0.5rem 0; }
+        nav { padding: 0; margin-bottom: 0; }
         nav ul { margin: 0; padding: 0; }
         .nav-links { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; padding: 0.25rem 0; }
         .nav-links a { font-size: 0.85rem; }
@@ -90,8 +90,8 @@
     <style>body { padding-top: 24px; }</style>
     {% endif %}
     <main class="container">
+        <h1><a href="/" style="text-decoration: none; color: inherit;">YRAA Alpine Scoring</a></h1>
         <nav>
-            <h1><a href="/" style="text-decoration: none; color: inherit;">YRAA Alpine Scoring</a></h1>
             <div class="nav-links">
                 {% for cat in categories %}
                 <a href="/{{ cat.gender }}/{{ cat.sport }}">{{ cat.gender|title }} {{ cat.sport|title }}</a>

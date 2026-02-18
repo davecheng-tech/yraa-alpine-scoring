@@ -35,13 +35,14 @@ No test framework is configured yet (`tests/` is empty).
 **Pipeline**: Raw CSV → `parser.py` → `ingest.py` → SQLite (`db.py`) → `web.py` → Jinja2 templates
 
 Key modules in `yraa/`:
-- **parser.py** — Parses raw multi-section race CSVs. Extracts date from filename (`YYYYMMDD-N-gender_sport_results.csv`), handles Open/HS divisions, detects DQ/DNS/DNF.
+- **parser.py** — Parses raw multi-section race CSVs. Extracts date from filename (`YYYYMMDD-N-gender_sport_results[-ofsaa].csv`), handles Open/HS divisions, detects DQ/DNS/DNF. `parse_filename()` detects `-ofsaa` suffix; `normalize_filename()` strips it for dedup.
 - **scoring.py** — Team scoring: groups by school, caps 4 scores per racer, selects top 12, combines Open + HS divisions.
 - **points.py** — Place-to-points lookup. HS: places 1–30 (50→1 pts). Open: places 1–15 (25→1 pts).
-- **db.py** — SQLite schema (`events`, `race_results` tables), leaderboard queries, season summary. Individual scoring uses top 3 results (≤5 races) or top 4 (≥6 races).
-- **ingest.py** — CLI ingestion with preview and confirmation. Assigns sequential race numbers. Deduplicates via UNIQUE constraints.
-- **web.py** — FastAPI app. HTML routes at `/team/{gender}/{sport}` and `/individual/{gender}/{sport}/{division}`. JSON API at `/api/...` equivalents. DB path via `YRAA_DB_PATH` env var (default: `data/yraa.db`).
-- **templates/** — Jinja2 (base, home, team, individual). Uses Pico CSS from CDN.
+- **db.py** — SQLite schema (`events`, `race_results` tables), leaderboard queries, season summary. Individual scoring uses top 3 results (≤5 races) or top 4 (≥6 races). OFSAA flags (`ofsaa_ski`, `ofsaa_snowboard`) on `events` table.
+- **ingest.py** — CLI ingestion with preview and confirmation. Assigns sequential race numbers. Deduplicates via UNIQUE constraints. Detects `-ofsaa` filenames and sets event flags; supports retroactive designation.
+- **ofsaa.py** — OFSAA qualifier scoring engine. Team: top 3 placements × 2 runs, lowest total wins. Individual: combined placement across both runs, excluding winning team members.
+- **web.py** — FastAPI app. HTML routes at `/{gender}/{sport}/{tab}`, `/races`, `/ofsaa`. JSON API at `/api/...`. CSV export at `/export/...`. DB path via `YRAA_DB_PATH` env var (default: `data/yraa.db`).
+- **templates/** — Jinja2 (base, home, category, races, ofsaa). Uses Pico CSS from CDN.
 - **cli.py + io.py** — Legacy CLI for pre-computed championship point CSVs.
 
 ## Scoring Rules
@@ -51,6 +52,7 @@ Key modules in `yraa/`:
 - **Individual**: Top 3 race results (or top 4 if ≥6 races), per division
 - **Individual tiebreakers** (Regulation 4.d.i.h): 1) head-to-head in shared races, 2) best single result then second-best etc., 3) more races. Unresolved ties share rank.
 - Tied places receive identical points. Floating-point scores supported for tie-splits.
+- **OFSAA Qualifiers**: Designated via `-ofsaa` filename suffix. Team: top 3 placements × 2 runs, lowest total wins (tiebreak: sum of times). Individual: run1 + run2 placement, lowest wins (tiebreak: total time); winning team members excluded. Separate OFSAA events per sport (`ofsaa_ski`, `ofsaa_snowboard` columns). Bill Crothers is eligible for OFSAA (no exclusion).
 
 ## Data Directory Structure
 
