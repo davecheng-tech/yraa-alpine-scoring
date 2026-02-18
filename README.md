@@ -121,6 +121,18 @@ When two athletes have the same total points, ties are broken in order:
 3. **More races**: If all compared results are equal, the athlete with more races ranks higher
 4. If still tied after all tiebreakers, athletes share the same rank (skip-on-tie numbering)
 
+### OFSAA Qualifiers
+
+YRAA sends athletes to OFSAA (Ontario provincial competition) based on results from a single designated "OFSAA Qualifier" event per sport. Ski and snowboard may have different qualifier dates.
+
+**Designation:** Rename the event's CSV files to add `-ofsaa` before the extension (e.g., `20260212-1-girls_ski_results-ofsaa.csv`) and re-run ingest. If the data is already ingested, only the OFSAA flag is set on the event — no duplicate data is inserted.
+
+**Team scoring:** Teams need 3+ finishers in both runs. Score = sum of top 3 placements from each run (6 total). Lowest score wins. Tiebreak: sum of times for those 6 athletes.
+
+**Individual scoring:** Athletes must finish both runs. Score = run 1 place + run 2 place. Lowest wins. Tiebreak: total time across both runs. Athletes on the winning team are excluded — the top individual qualifier is the best finisher not on the qualifying team.
+
+The `/ofsaa` page has three tabs: HS (individual), Open (individual), and Team. Each shows qualifiers across all four categories (Girls Ski, Boys Ski, Girls Snowboard, Boys Snowboard).
+
 ### Leaderboards
 
 4 category pages (Girls Ski, Boys Ski, Girls Snowboard, Boys Snowboard), each with 3 tabs:
@@ -131,7 +143,9 @@ When two athletes have the same total points, ties are broken in order:
 
 A dedicated race results page shows all race results with filtering by category, division, race number, school, and athlete.
 
-URL structure: `/{gender}/{sport}/{tab}` (e.g., `/girls/ski/hs`), `/races`
+An OFSAA Qualifiers page (`/ofsaa`) shows team and individual qualifiers across all categories (see [OFSAA Qualifiers](#ofsaa-qualifiers)).
+
+URL structure: `/{gender}/{sport}/{tab}` (e.g., `/girls/ski/hs`), `/races`, `/ofsaa`
 
 ### CSV Export
 
@@ -140,6 +154,7 @@ Any leaderboard or race results view can be exported as CSV:
 - **Individual championship** — `/export/{gender}/{sport}/{division}` (place, name, school, points)
 - **Team championship** — `/export/{gender}/{sport}/team` (place, school, points)
 - **Race results** — `/export/races` (respects active filters; includes race column when viewing multiple races)
+- **OFSAA qualifiers** — `/export/ofsaa?tab={hs|open|team}` (qualifier names/schools per category)
 
 Export links appear on each tab and on the race results page. Filenames are descriptive based on the active view and filters.
 
@@ -180,7 +195,7 @@ Place,Colour,#,First Name,Last Name,School,Racing Category,Run #1,Notes
 - **Division sections** — Open and High School divisions are separated by a blank row, each with its own header row (though the second header row is optional)
 - **Racing Category** — Must contain the sport, gender, and division (e.g., `SKI (Girls):  Open Div`, `BOARD (Boys):  High School Div`)
 
-Filename convention: `YYYYMMDD-N-gender_sport_results.csv` (e.g., `20260212-1-boys_ski_results.csv`). The date is extracted from the filename for the event record.
+Filename convention: `YYYYMMDD-N-gender_sport_results[-ofsaa].csv` (e.g., `20260212-1-boys_ski_results.csv`). The date is extracted from the filename for the event record. Adding `-ofsaa` before the extension designates that event as the OFSAA qualifier for that sport (see [OFSAA Qualifiers](#ofsaa-qualifiers)).
 
 ### Notes for Scorekeepers: DQ / DNF / DNS
 
@@ -215,15 +230,17 @@ yraa/
     models.py      — data classes (RaceResult, TeamScore, ContributingScore)
     io.py          — legacy CSV parsing
     points.py      — place-to-points lookup tables
-    parser.py      — raw race result CSV parser
+    parser.py      — raw race result CSV parser (includes OFSAA filename detection)
     db.py          — SQLite schema, inserts, leaderboard queries
     ingest.py      — CLI for ingesting raw CSVs into the database
+    ofsaa.py       — OFSAA qualifier scoring (team + individual)
     web.py         — FastAPI web dashboard and CSV export endpoints
     templates/
         base.html      — base layout (Pico CSS, medal circle styles)
         home.html      — landing page with season summary
         category.html  — championship leaderboards (HS/Open/Team tabs)
         races.html     — race results with filtering and time display toggle
+        ofsaa.html     — OFSAA qualifiers (HS/Open/Team tabs)
 
 data/
     samples/
