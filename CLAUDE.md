@@ -10,7 +10,7 @@ YRAA Alpine Ski & Snowboard Championship Scoring — a Python scoring engine and
 
 ```bash
 # Install dependencies
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 
 # Ingest race results into SQLite
 python3 -m yraa.ingest --dir data/raw/          # batch, with confirmation prompt
@@ -18,7 +18,7 @@ python3 -m yraa.ingest --file data/raw/FILE.csv  # single file
 python3 -m yraa.ingest --dir data/raw/ --yes     # skip confirmation
 
 # Run web dashboard (dev)
-uvicorn yraa.web:app --reload
+YRAA_ENV=dev python3 -m uvicorn yraa.web:app --reload
 
 # Docker
 docker compose up -d
