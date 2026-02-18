@@ -129,7 +129,19 @@ When two athletes have the same total points, ties are broken in order:
 - **Open** — individual Open division standings
 - **Team** — team standings (Open + HS combined)
 
-URL structure: `/{gender}/{sport}/{tab}` (e.g., `/girls/ski/hs`)
+A dedicated race results page shows all race results with filtering by category, division, race number, school, and athlete.
+
+URL structure: `/{gender}/{sport}/{tab}` (e.g., `/girls/ski/hs`), `/races`
+
+### CSV Export
+
+Any leaderboard or race results view can be exported as CSV:
+
+- **Individual championship** — `/export/{gender}/{sport}/{division}` (place, name, school, points)
+- **Team championship** — `/export/{gender}/{sport}/team` (place, school, points)
+- **Race results** — `/export/races` (respects active filters; includes race column when viewing multiple races)
+
+Export links appear on each tab and on the race results page. Filenames are descriptive based on the active view and filters.
 
 ### DQ/DNF/DNS Handling
 
@@ -171,14 +183,18 @@ Filename convention: `YYYYMMDD-N-gender_sport_results.csv` (e.g., `20260212-1-bo
 yraa/
     cli.py         — legacy CLI for pre-computed CSVs
     scoring.py     — team scoring algorithm (Regulation 4.d.ii)
-    models.py      — data classes (RaceResult, TeamScore)
+    models.py      — data classes (RaceResult, TeamScore, ContributingScore)
     io.py          — legacy CSV parsing
     points.py      — place-to-points lookup tables
     parser.py      — raw race result CSV parser
     db.py          — SQLite schema, inserts, leaderboard queries
     ingest.py      — CLI for ingesting raw CSVs into the database
-    web.py         — FastAPI web dashboard
-    templates/     — Jinja2 HTML templates
+    web.py         — FastAPI web dashboard and CSV export endpoints
+    templates/
+        base.html      — base layout (Pico CSS, medal circle styles)
+        home.html      — landing page with season summary
+        category.html  — championship leaderboards (HS/Open/Team tabs)
+        races.html     — race results with filtering and time display toggle
 
 data/
     samples/
@@ -191,8 +207,6 @@ data/
 ## Planned Features
 
 - **Admin interface** — Authenticated web UI for uploading race result CSVs, replacing the CLI ingest workflow
-- **Race results CSV export** — Export any race result view as CSV, retaining active filters
-- **Team championship points CSV export** — Export team championship points view as CSV
 
 ## To Do
 
