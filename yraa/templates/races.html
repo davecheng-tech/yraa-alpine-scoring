@@ -158,7 +158,14 @@
     }
     function onSchoolChange() {
         // Reset athlete when school changes (athlete list depends on school)
-        window.location.href = buildUrl({athlete: ''});
+        var schoolVal = document.getElementById('filter-school').value;
+        var athleteVal = document.getElementById('filter-athlete').value;
+        var overrides = {athlete: ''};
+        // If clearing school and no athlete selected, reset race from "all"
+        if (!schoolVal && !athleteVal) {
+            overrides.race = '';
+        }
+        window.location.href = buildUrl(overrides);
     }
     document.getElementById('filter-group').addEventListener('change', onCategoryChange);
     document.getElementById('filter-sport').addEventListener('change', onCategoryChange);
@@ -167,9 +174,13 @@
     document.getElementById('filter-school').addEventListener('change', onSchoolChange);
     document.getElementById('filter-athlete').addEventListener('change', function() {
         var athleteVal = document.getElementById('filter-athlete').value;
+        var schoolVal = document.getElementById('filter-school').value;
         // Default to "All Races" when selecting a specific athlete
         if (athleteVal) {
             window.location.href = buildUrl({race: 'all'});
+        } else if (!schoolVal) {
+            // No athlete and no school — reset race from "all"
+            window.location.href = buildUrl({race: ''});
         } else {
             window.location.href = buildUrl();
         }

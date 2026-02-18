@@ -111,6 +111,10 @@ def races_page(request: Request, group: str = None, sport: str = None, division:
     if not athlete:
         athlete = None
 
+    # "All Races" only allowed with a narrowing filter (school or athlete)
+    if all_races and not school and not athlete:
+        all_races = False
+
     # Only default to first race if no school/athlete filter is narrowing results
     if not race_num and not all_races and category_races:
         race_num = category_races[-1]["seq"]
