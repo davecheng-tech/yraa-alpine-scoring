@@ -131,6 +131,10 @@
 <p>No results found for this selection.</p>
 {% endif %}
 
+{% if results %}
+<p><small><a id="export-races-link" href="/export/races">Export as CSV</a></small></p>
+{% endif %}
+
 <script>
     function buildUrl(overrides) {
         var params = {
@@ -248,5 +252,25 @@
             }
         });
     }
+
+    // Update export link to match current filters
+    function updateExportLink() {
+        var link = document.getElementById('export-races-link');
+        if (!link) return;
+        var params = {
+            group: document.getElementById('filter-group').value,
+            sport: document.getElementById('filter-sport').value,
+            division: document.getElementById('filter-division').value,
+            race: document.getElementById('filter-race').value,
+            school: document.getElementById('filter-school').value,
+            athlete: document.getElementById('filter-athlete').value
+        };
+        var parts = [];
+        for (var key in params) {
+            if (params[key]) parts.push(key + '=' + encodeURIComponent(params[key]));
+        }
+        link.href = '/export/races?' + parts.join('&');
+    }
+    updateExportLink();
 </script>
 {% endblock %}
