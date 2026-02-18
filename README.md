@@ -153,7 +153,11 @@ Flagged athletes are stored in the database and displayed at the bottom of race 
 
 ## Raw CSV Format
 
-Raw race result CSVs (from the scorekeeper) follow this structure:
+Race results are recorded in a Google Sheets spreadsheet and exported as CSV for ingestion. The spreadsheet should follow this format:
+
+![Scoresheet format](docs/scoresheet-format.jpg)
+
+The exported CSV follows this structure:
 
 ```
 "BOYS SKI [Thurs. Feb. 12, 2026 @ Beaver Valley]",,,,,,,,
@@ -166,7 +170,30 @@ Place,Colour,#,First Name,Last Name,School,Racing Category,Run #1,Notes
 ...
 ```
 
+**Key formatting requirements:**
+
+- **Row 1** — Title row: category and event info (e.g., `GIRLS SKI [Thurs. Feb. 12, 2026 @ Beaver Valley]`)
+- **Row 2** — Header row: `Place, Colour, #, First Name, Last Name, School, Racing Category, Run #1, Notes`
+- **Data rows** — One row per racer with place, bib info, name, school, racing category, and time
+- **Division sections** — Open and High School divisions are separated by a blank row, each with its own header row (though the second header row is optional)
+- **Racing Category** — Must contain the sport, gender, and division (e.g., `SKI (Girls):  Open Div`, `BOARD (Boys):  High School Div`)
+
 Filename convention: `YYYYMMDD-N-gender_sport_results.csv` (e.g., `20260212-1-boys_ski_results.csv`). The date is extracted from the filename for the event record.
+
+### Notes for Scorekeepers: DQ / DNF / DNS
+
+When a racer does not finish or is disqualified, record it as follows:
+
+| Situation | Place | Time | Notes |
+|-----------|-------|------|-------|
+| **Did Not Start (DNS)** | Leave blank | Leave blank | `DNS` |
+| **Did Not Finish (DNF)** | Leave blank | Leave blank | `DNF` |
+| **Disqualified (DQ)** | Leave blank | `998` | `DQ` followed by reason (e.g., `DQ- start`, `DQ- missed gate`) |
+
+- The **Notes** column is what the system checks first. Write `DNS`, `DNF`, or `DQ` anywhere in the Notes field (case doesn't matter). `DSQ` is also recognized as DQ.
+- A time of **998 or higher** with no Notes entry is treated as DNF.
+- A **blank Place with no valid time** and no Notes entry is also treated as DNF.
+- Flagged athletes are excluded from championship scoring but still appear in race results for record-keeping.
 
 ### Parsing Edge Cases
 
