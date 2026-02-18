@@ -162,11 +162,13 @@ The exported CSV follows this structure:
 ```
 "BOYS SKI [Thurs. Feb. 12, 2026 @ Beaver Valley]",,,,,,,,
 Place,Colour,#,First Name,Last Name,School,Racing Category,Run #1,Notes
-1,Orange,7,Finley,Hankai,Denison,SKI (Boys):  Open Div,21.81,
+1,Orange,7,John,Smith,Denison,SKI (Boys):  Open Div,21.81,
+2,Orange,3,Alex,Johnson,Huron,SKI (Boys):  Open Div,22.45,
 ...
 [blank row]
 Place,Colour,#,First Name,Last Name,School,Racing Category,Run #1,Notes
-1,Orange,116,Thomas,OMeara,Cardinal Carter,SKI (Boys):  High School Div,24.66,
+1,Orange,116,Mike,Williams,Cardinal Carter,SKI (Boys):  High School Div,24.66,
+2,Orange,112,Sam,Brown,St. Maximilian Kolbe,SKI (Boys):  High School Div,25.10,
 ...
 ```
 
@@ -188,12 +190,12 @@ When a racer does not finish or is disqualified, record it as follows:
 |-----------|-------|------|-------|
 | **Did Not Start (DNS)** | Leave blank | Leave blank | `DNS` |
 | **Did Not Finish (DNF)** | Leave blank | Leave blank | `DNF` |
-| **Disqualified (DQ)** | Leave blank | `998` | `DQ` followed by reason (e.g., `DQ- start`, `DQ- missed gate`) |
+| **Disqualified (DQ)** | Leave blank | `999` | `DQ` followed by reason (e.g., `DQ start`, `DQ missed gate`) |
 
 - The **Notes** column is what the system checks first. Write `DNS`, `DNF`, or `DQ` anywhere in the Notes field (case doesn't matter). `DSQ` is also recognized as DQ.
 - A time of **998 or higher** with no Notes entry is treated as DNF.
 - A **blank Place with no valid time** and no Notes entry is also treated as DNF.
-- Flagged athletes are excluded from championship scoring but still appear in race results for record-keeping.
+- DQ/DNF/DNS results do not count toward individual or team championship points. They still appear in race results for reference.
 
 ### Parsing Edge Cases
 
