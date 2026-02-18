@@ -95,36 +95,43 @@ def _classify_racing_category(category_str):
     return gender, sport, division
 
 
-def _is_disqualified(place_str, time_str, notes_str):
-    """Check if a result should be skipped (DNS/DNF/DQ/DSQ)."""
+def _get_dq_status(place_str, time_str, notes_str):
+    """Determine DQ/DNF/DNS status, or None if normal result.
+
+    Returns "DQ", "DNF", "DNS", or None.
+    Priority: DNS > DNF > DQ/DSQ (DSQ maps to DQ).
+    """
     notes_upper = notes_str.upper()
 
-    # Substring match for DQ-related keywords in notes
-    for keyword in ("DNS", "DNF", "DQ", "DSQ"):
-        if keyword in notes_upper:
-            return True
+    # Check notes for specific status keywords (priority order)
+    if "DNS" in notes_upper:
+        return "DNS"
+    if "DNF" in notes_upper:
+        return "DNF"
+    if "DQ" in notes_upper or "DSQ" in notes_upper:
+        return "DQ"
 
-    # Time >= 998
+    # Time >= 998 implies DNF
     if time_str:
         try:
             t = float(time_str)
             if t >= 998:
-                return True
+                return "DNF"
         except ValueError:
             pass
 
-    # Empty place with no valid time
+    # Empty place with no valid time implies DNF
     if not place_str.strip():
         if not time_str.strip():
-            return True
+            return "DNF"
         try:
             t = float(time_str)
             if t >= 998:
-                return True
+                return "DNF"
         except ValueError:
-            return True
+            return "DNF"
 
-    return False
+    return None
 
 
 def _parse_data_row(row, event_date):
@@ -151,9 +158,22 @@ def _parse_data_row(row, event_date):
 
     gender, sport, division = classification
 
-    # Check disqualification
-    if _is_disqualified(place_str, time_str, notes_str):
-        return None
+    # Check disqualification status
+    status = _get_dq_status(place_str, time_str, notes_str)
+    if status:
+        return {
+            "first_name": first_name,
+            "last_name": last_name,
+            "school": school,
+            "gender": gender,
+            "sport": sport,
+            "division": division,
+            "place": None,
+            "time_seconds": None,
+            "event_date": event_date,
+            "points": 0,
+            "status": status,
+        }
 
     # Parse place
     try:
@@ -182,4 +202,5 @@ def _parse_data_row(row, event_date):
         "time_seconds": time_seconds,
         "event_date": event_date,
         "points": points,
+        "status": None,
     }
