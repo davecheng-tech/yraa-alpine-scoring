@@ -28,7 +28,7 @@
         {% set is_excluded = team.school.startswith("Bill Crothers") %}
         {% if is_excluded %}{% set ns.has_excluded = true %}{% endif %}
         <tr>
-            <td class="rank">{% if not is_excluded %}{% set ns.rank = ns.rank + 1 %}{{ ns.rank }}{% endif %}</td>
+            <td class="rank">{% if not is_excluded %}{% set ns.rank = ns.rank + 1 %}{% if ns.rank in [1,2,3] %}<span class="medal {{ {1:'medal-gold',2:'medal-silver',3:'medal-bronze'}[ns.rank] }}">{{ ns.rank }}</span>{% else %}{{ ns.rank }}{% endif %}{% endif %}</td>
             <td>{{ team.school }}</td>
             <td class="points points-clickable" onclick="showDetail('team-{{ loop.index }}')">{{ '%g' % team.total_points }}</td>
         </tr>
@@ -76,7 +76,7 @@
     <tbody>
         {% for a in athletes %}
         <tr>
-            <td class="rank">{{ a.rank }}</td>
+            <td class="rank">{% if a.rank in [1,2,3] %}<span class="medal {{ {1:'medal-gold',2:'medal-silver',3:'medal-bronze'}[a.rank] }}">{{ a.rank }}</span>{% else %}{{ a.rank }}{% endif %}</td>
             <td>{{ a.first_name }} {{ a.last_name|upper }}</td>
             <td>{{ a.school }}</td>
             <td class="points points-clickable" onclick="showDetail('athlete-{{ loop.index }}')">{{ a.total_points }}</td>
