@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}OFSAA Qualifiers — YRAA{% endblock %}
+
+{% block content %}
+<h2>OFSAA Qualifiers</h2>
+
+<div class="division-tabs">
+    <a href="/ofsaa?tab=hs"{% if tab == 'hs' %} class="active"{% endif %}>HS</a>
+    <a href="/ofsaa?tab=open"{% if tab == 'open' %} class="active"{% endif %}>Open</a>
+    <a href="/ofsaa?tab=team"{% if tab == 'team' %} class="active"{% endif %}>Team</a>
+</div>
+
+{% if tab == 'team' %}
+
+<table>
+    <thead>
+        <tr>
+            <th>Category</th>
+            <th>HS</th>
+            <th>Open</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cat in categories %}
+        {% set hs_data = ofsaa_data.get((cat.gender, cat.sport, 'hs')) %}
+        {% set open_data = ofsaa_data.get((cat.gender, cat.sport, 'open')) %}
+        <tr>
+            <td>{{ cat.gender|title }} {{ cat.sport|title }}</td>
+            <td>
+                {% if not hs_data or not hs_data.event_date %}
+                    —
+                {% elif hs_data.team %}
+                    {{ hs_data.team[0].school }}
+                {% else %}
+                    <em>No eligible team</em>
+                {% endif %}
+            </td>
+            <td>
+                {% if not open_data or not open_data.event_date %}
+                    —
+                {% elif open_data.team %}
+                    {{ open_data.team[0].school }}
+                {% else %}
+                    <em>No eligible team</em>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+
+<table>
+    <thead>
+        <tr>
+            <th>Category</th>
+            <th>Qualifier</th>
+            <th>School</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cat in categories %}
+        {% set data = ofsaa_data.get((cat.gender, cat.sport, tab)) %}
+        <tr>
+            <td>{{ cat.gender|title }} {{ cat.sport|title }}</td>
+            {% if not data or not data.event_date %}
+                <td>—</td>
+                <td></td>
+            {% elif data.individual %}
+                <td>{{ data.individual[0].first_name }} {{ data.individual[0].last_name|upper }}</td>
+                <td>{{ data.individual[0].school }}</td>
+            {% else %}
+                <td><em>No eligible individual</em></td>
+                <td></td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endif %}
+
+{% if ofsaa_dates %}
+<p><small>
+    OFSAA qualifier event{{ 's' if ofsaa_dates|length > 1 }}: {% for sport, date in ofsaa_dates.items() %}{% if not loop.first %}, {% endif %}{{ sport|title }} ({{ date }}){% endfor %}.
+</small></p>
+{% endif %}
+{% endblock %}

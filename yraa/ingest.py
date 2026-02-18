@@ -4,8 +4,8 @@ import os
 import sys
 from collections import Counter
 
-from .parser import parse_race_csv
-from .db import init_db, get_or_create_event, get_next_race_number, insert_race_results, is_file_ingested, mark_file_ingested
+from .parser import parse_race_csv, parse_filename, normalize_filename
+from .db import init_db, get_or_create_event, get_next_race_number, insert_race_results, is_file_ingested, mark_file_ingested, set_event_ofsaa_flag
 
 DEFAULT_DB = "data/yraa.db"
 
@@ -36,19 +36,36 @@ def main():
 
     all_results = []
     skipped_files = []
+    ofsaa_flagged = []
     for path in files:
         basename = os.path.basename(path)
-        existing_race = is_file_ingested(conn, basename)
+        normalized = normalize_filename(basename)
+        parsed = parse_filename(path)
+        is_ofsaa = parsed["is_ofsaa"] if parsed else False
+
+        existing_race = is_file_ingested(conn, normalized)
         if existing_race is not None:
-            skipped_files.append((basename, existing_race))
+            if is_ofsaa and parsed:
+                # Retroactive OFSAA designation: flag the event but skip data insertion
+                event_date = parsed["event_date"]
+                event_id = get_or_create_event(conn, event_date)
+                set_event_ofsaa_flag(conn, event_id, parsed["sport"])
+                ofsaa_flagged.append((basename, event_date, parsed["sport"]))
+            else:
+                skipped_files.append((basename, existing_race))
             continue
         results = parse_race_csv(path)
-        all_results.append((path, results))
+        all_results.append((path, results, is_ofsaa, parsed))
 
     next_race = get_next_race_number(conn)
 
     # Print preview
     print(f"\nDatabase: {args.db}")
+
+    if ofsaa_flagged:
+        for basename, event_date, sport in ofsaa_flagged:
+            print(f"Flagged event {event_date} as OFSAA qualifier for {sport}.")
+        print()
 
     if skipped_files:
         print(f"Already ingested ({len(skipped_files)} files):")
@@ -64,7 +81,7 @@ def main():
     print(f"New files to ingest: {len(all_results)}")
     print()
 
-    for i, (path, results) in enumerate(all_results):
+    for i, (path, results, is_ofsaa, parsed) in enumerate(all_results):
         race_num = next_race + i
         basename = os.path.basename(path)
 
@@ -74,8 +91,9 @@ def main():
 
         cat = f"{'/'.join(genders)} {'/'.join(sports)}"
         div_str = ", ".join(f"{d}: {c}" for d, c in sorted(divisions.items()))
+        ofsaa_tag = " [OFSAA]" if is_ofsaa else ""
 
-        print(f"  Race #{race_num}: {basename}")
+        print(f"  Race #{race_num}: {basename}{ofsaa_tag}")
         print(f"    Category: {cat}")
         print(f"    Results: {len(results)} ({div_str})")
 
@@ -89,7 +107,7 @@ def main():
             print(f"    Top scorers: {scorers}")
         print()
 
-    total = sum(len(r) for _, r in all_results)
+    total = sum(len(r) for _, r, _, _ in all_results)
     print(f"Total results: {total}")
     print(f"Race numbers: {next_race}–{next_race + len(all_results) - 1}")
     print()
@@ -102,9 +120,10 @@ def main():
             sys.exit(0)
 
     # Insert
-    for i, (path, results) in enumerate(all_results):
+    for i, (path, results, is_ofsaa, parsed) in enumerate(all_results):
         race_num = next_race + i
         basename = os.path.basename(path)
+        normalized = normalize_filename(basename)
 
         # Get event date from first result
         event_date = results[0]["event_date"] if results else None
@@ -114,8 +133,13 @@ def main():
 
         event_id = get_or_create_event(conn, event_date)
         inserted, skipped = insert_race_results(conn, results, event_id, race_num)
-        mark_file_ingested(conn, basename, race_num)
-        print(f"  Race #{race_num} ({basename}): {inserted} inserted, {skipped} skipped")
+        mark_file_ingested(conn, normalized, race_num)
+
+        if is_ofsaa and parsed:
+            set_event_ofsaa_flag(conn, event_id, parsed["sport"])
+
+        ofsaa_msg = " [OFSAA]" if is_ofsaa else ""
+        print(f"  Race #{race_num} ({basename}): {inserted} inserted, {skipped} skipped{ofsaa_msg}")
 
     conn.close()
     print("\nDone.")

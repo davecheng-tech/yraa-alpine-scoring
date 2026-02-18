@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     event_date TEXT NOT NULL,
     location TEXT,
+    ofsaa_ski INTEGER DEFAULT 0,
+    ofsaa_snowboard INTEGER DEFAULT 0,
     created_at TEXT DEFAULT (datetime('now')),
     UNIQUE(event_date)
 );
@@ -50,6 +52,13 @@ def init_db(db_path):
         conn.commit()
     except sqlite3.OperationalError:
         pass  # column already exists
+    # Migration: add OFSAA columns to events table
+    for col in ("ofsaa_ski", "ofsaa_snowboard"):
+        try:
+            conn.execute(f"ALTER TABLE events ADD COLUMN {col} INTEGER DEFAULT 0")
+            conn.commit()
+        except sqlite3.OperationalError:
+            pass  # column already exists
     conn.commit()
     return conn
 
@@ -425,3 +434,56 @@ def get_athletes(conn, gender, sport, division, school=None):
     query += " ORDER BY last_name COLLATE NOCASE, first_name COLLATE NOCASE"
     rows = conn.execute(query, params).fetchall()
     return [{"value": f"{r['first_name']} {r['last_name']}", "label": f"{r['last_name'].upper()}, {r['first_name']}"} for r in rows]
+
+
+def set_event_ofsaa_flag(conn, event_id, sport):
+    """Set ofsaa_{sport} = 1 on the given event."""
+    col = f"ofsaa_{sport}"
+    conn.execute(f"UPDATE events SET {col} = 1 WHERE id = ?", (event_id,))
+    conn.commit()
+
+
+def get_ofsaa_event(conn, sport):
+    """Return the event row where ofsaa_{sport} = 1, or None."""
+    col = f"ofsaa_{sport}"
+    row = conn.execute(
+        f"SELECT * FROM events WHERE {col} = 1", ()
+    ).fetchone()
+    return row
+
+
+def get_ofsaa_race_results(conn, gender, sport, division):
+    """Return (run1_results, run2_results) for the OFSAA event.
+
+    Each list contains dicts with first_name, last_name, school, place,
+    time_seconds, status. Returns (None, None) if no OFSAA event or <2 runs.
+    """
+    event = get_ofsaa_event(conn, sport)
+    if not event:
+        return None, None
+
+    event_id = event["id"]
+
+    # Get distinct race numbers for this event/gender/sport/division
+    race_numbers = conn.execute(
+        """SELECT DISTINCT race_number FROM race_results
+           WHERE event_id = ? AND gender = ? AND sport = ? AND division = ?
+           ORDER BY race_number""",
+        (event_id, gender, sport, division),
+    ).fetchall()
+
+    if len(race_numbers) < 2:
+        return None, None
+
+    runs = []
+    for rn_row in race_numbers[:2]:
+        rows = conn.execute(
+            """SELECT first_name, last_name, school, place, time_seconds, status
+               FROM race_results
+               WHERE event_id = ? AND race_number = ? AND gender = ? AND sport = ? AND division = ?
+               ORDER BY CASE WHEN status IS NOT NULL THEN 1 ELSE 0 END, place""",
+            (event_id, rn_row["race_number"], gender, sport, division),
+        ).fetchall()
+        runs.append([dict(r) for r in rows])
+
+    return runs[0], runs[1]

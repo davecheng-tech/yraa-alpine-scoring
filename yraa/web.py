@@ -6,6 +6,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Stre
 from fastapi.templating import Jinja2Templates
 
 from .db import get_connection, init_db, get_team_leaderboard, get_individual_leaderboard, get_season_summary, get_race_list, get_race_results, get_schools, get_athletes
+from .ofsaa import get_ofsaa_qualifiers
 
 DB_PATH = os.environ.get("YRAA_DB_PATH", "data/yraa.db")
 
@@ -310,6 +311,39 @@ def export_csv(gender: str, sport: str, division: str):
         media_type="text/csv",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+@app.get("/ofsaa", response_class=HTMLResponse)
+def ofsaa_page(request: Request, tab: str = "hs"):
+    if tab not in ("hs", "open", "team"):
+        tab = "hs"
+    conn = _get_db()
+
+    ofsaa_data = {}
+    ofsaa_dates = {}
+
+    if tab == "team":
+        for cat in CATEGORIES:
+            for div in ("hs", "open"):
+                key = (cat["gender"], cat["sport"], div)
+                ofsaa_data[key] = get_ofsaa_qualifiers(conn, cat["gender"], cat["sport"], div)
+                if ofsaa_data[key]["event_date"]:
+                    ofsaa_dates[cat["sport"]] = ofsaa_data[key]["event_date"]
+    else:
+        for cat in CATEGORIES:
+            key = (cat["gender"], cat["sport"], tab)
+            ofsaa_data[key] = get_ofsaa_qualifiers(conn, cat["gender"], cat["sport"], tab)
+            if ofsaa_data[key]["event_date"]:
+                ofsaa_dates[cat["sport"]] = ofsaa_data[key]["event_date"]
+
+    conn.close()
+    return templates.TemplateResponse("ofsaa.html", {
+        "request": request,
+        "tab": tab,
+        "categories": CATEGORIES,
+        "ofsaa_data": ofsaa_data,
+        "ofsaa_dates": ofsaa_dates,
+    })
 
 
 @app.get("/{gender}/{sport}", response_class=RedirectResponse)

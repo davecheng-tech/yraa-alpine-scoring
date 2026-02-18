@@ -4,6 +4,36 @@ import os
 from .points import points_for_place
 
 
+def parse_filename(path):
+    """Parse filename like YYYYMMDD-N-gender_sport_results[-ofsaa].csv.
+
+    Returns dict with event_date, run_number, gender, sport, is_ofsaa,
+    or None if unparseable.
+    """
+    basename = os.path.basename(path)
+    match = re.match(
+        r"(\d{4})(\d{2})(\d{2})-(\d+)-(\w+)_(ski|snowboard)_results(-ofsaa)?\.csv$",
+        basename,
+    )
+    if not match:
+        return None
+    return {
+        "event_date": f"{match.group(1)}-{match.group(2)}-{match.group(3)}",
+        "run_number": int(match.group(4)),
+        "gender": match.group(5),
+        "sport": match.group(6),
+        "is_ofsaa": match.group(7) is not None,
+    }
+
+
+def normalize_filename(basename):
+    """Strip -ofsaa suffix for dedup comparison.
+
+    '20260212-1-girls_ski_results-ofsaa.csv' -> '20260212-1-girls_ski_results.csv'
+    """
+    return re.sub(r"-ofsaa\.csv$", ".csv", basename)
+
+
 def parse_race_csv(path):
     """Parse a raw race result CSV and return a list of result dicts.
 
