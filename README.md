@@ -131,12 +131,13 @@ When two athletes have the same total points, ties are broken in order:
 
 URL structure: `/{gender}/{sport}/{tab}` (e.g., `/girls/ski/hs`)
 
-### Disqualification
+### DQ/DNF/DNS Handling
 
-A result is skipped if any of:
-- Notes column contains DNS, DNF, DQ, or DSQ as a substring (case-insensitive)
-- Time is ≥ 998
-- Place is empty with no valid time
+Athletes are flagged with a status (DQ, DNF, or DNS) based on:
+- Notes column contains DNS, DNF, DQ, or DSQ as a substring (case-insensitive; priority: DNS > DNF > DQ; DSQ maps to DQ)
+- Time ≥ 998 or empty place with no valid time defaults to DNF
+
+Flagged athletes are stored in the database and displayed at the bottom of race result pages (blank place, status in time column, blank points). They are excluded from individual and team championship scoring.
 
 ## Raw CSV Format
 
@@ -190,8 +191,6 @@ data/
 ## Planned Features
 
 - **Admin interface** — Authenticated web UI for uploading race result CSVs, replacing the CLI ingest workflow
-- **Race results notes** — Store DNS/DNF/DQ notes in the database schema and display them in the race results view
-- **Include DQ/DNF/DNS in race results** — Show disqualified, did-not-finish, and did-not-start athletes in the race results view
 - **Race results CSV export** — Export any race result view as CSV, retaining active filters
 - **Team championship points CSV export** — Export team championship points view as CSV
 

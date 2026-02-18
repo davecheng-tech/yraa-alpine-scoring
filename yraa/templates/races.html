@@ -114,11 +114,15 @@
         {% for r in results %}
         <tr data-athlete="{{ r.first_name }} {{ r.last_name }}">
             {% if selected_race == "all" %}<td class="rank">{{ r.race_seq }}</td>{% endif %}
-            <td class="rank">{{ r.place }}</td>
+            <td class="rank">{{ r.place if r.place is not none else '' }}</td>
             <td>{{ r.first_name }} {{ r.last_name|upper }}</td>
             <td>{{ r.school }}</td>
+            {% if r.status %}
+            <td class="points">{{ r.status }}</td>
+            {% else %}
             <td class="points time-cell" data-time="{{ r.time_seconds if r.time_seconds else '' }}">{{ '%.2f' % r.time_seconds if r.time_seconds else '' }}</td>
-            <td class="points">{{ r.points }}</td>
+            {% endif %}
+            <td class="points">{{ '' if r.status else r.points }}</td>
         </tr>
         {% endfor %}
     </tbody>

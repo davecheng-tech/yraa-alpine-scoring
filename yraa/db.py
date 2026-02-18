@@ -23,9 +23,10 @@ CREATE TABLE IF NOT EXISTS race_results (
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
     school TEXT NOT NULL,
-    place INTEGER NOT NULL,
+    place INTEGER,
     time_seconds REAL,
     points INTEGER NOT NULL DEFAULT 0,
+    status TEXT,
     created_at TEXT DEFAULT (datetime('now')),
     UNIQUE(race_number, gender, sport, division, first_name, last_name)
 );
@@ -43,6 +44,12 @@ def init_db(db_path):
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     conn.executescript(SCHEMA)
+    # Migration: add status column to existing DBs
+    try:
+        conn.execute("ALTER TABLE race_results ADD COLUMN status TEXT")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass  # column already exists
     conn.commit()
     return conn
 
@@ -101,8 +108,8 @@ def insert_race_results(conn, results, event_id, race_number):
             conn.execute(
                 """INSERT INTO race_results
                    (event_id, race_number, gender, sport, division,
-                    first_name, last_name, school, place, time_seconds, points)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    first_name, last_name, school, place, time_seconds, points, status)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
                     event_id,
                     race_number,
@@ -115,6 +122,7 @@ def insert_race_results(conn, results, event_id, race_number):
                     r["place"],
                     r["time_seconds"],
                     r["points"],
+                    r.get("status"),
                 ),
             )
             inserted += 1
@@ -180,7 +188,7 @@ def get_individual_leaderboard(conn, gender, sport, division):
     rows = conn.execute(
         """SELECT first_name, last_name, school, race_number, points
            FROM race_results
-           WHERE gender = ? AND sport = ? AND division = ?
+           WHERE gender = ? AND sport = ? AND division = ? AND status IS NULL
            ORDER BY last_name, first_name, points DESC""",
         (gender, sport, division),
     ).fetchall()
@@ -259,7 +267,7 @@ def get_team_leaderboard(conn, gender, sport):
     rows = conn.execute(
         """SELECT first_name, last_name, school, race_number, division, points
            FROM race_results
-           WHERE gender = ? AND sport = ?""",
+           WHERE gender = ? AND sport = ? AND status IS NULL""",
         (gender, sport),
     ).fetchall()
 
@@ -358,7 +366,7 @@ def get_race_results(conn, gender, sport, division, race_seq_number=None, school
     global_to_seq = race_seq
 
     # Build query with optional filters
-    query = """SELECT place, first_name, last_name, school, time_seconds, points, race_number
+    query = """SELECT place, first_name, last_name, school, time_seconds, points, race_number, status
                FROM race_results
                WHERE gender = ? AND sport = ? AND division = ?"""
     params = [gender, sport, division]
@@ -380,7 +388,10 @@ def get_race_results(conn, gender, sport, division, race_seq_number=None, school
             query += " AND first_name = ? AND last_name = ?"
             params.extend(parts)
 
-    query += " ORDER BY race_number, place"
+    query += """ ORDER BY race_number,
+                 status IS NOT NULL,
+                 CASE status WHEN 'DQ' THEN 1 WHEN 'DNF' THEN 2 WHEN 'DNS' THEN 3 ELSE 0 END,
+                 place, last_name, first_name"""
     rows = conn.execute(query, params).fetchall()
 
     results = []
