@@ -163,6 +163,155 @@ def races_page(request: Request, group: str = None, sport: str = None, division:
     })
 
 
+@app.get("/export/races")
+def export_races_csv(group: str = None, sport: str = None, division: str = None, race: str = None, school: str = None, athlete: str = None):
+    gender = group
+
+    # Parse race number
+    race_num = None
+    all_races = False
+    if race == "all":
+        all_races = True
+    elif race:
+        try:
+            race_num = int(race)
+        except ValueError:
+            pass
+
+    conn = _get_db()
+    race_list = get_race_list(conn)
+
+    genders = sorted({k[0] for k in race_list})
+    sports = sorted({k[1] for k in race_list})
+    divisions = sorted({k[2] for k in race_list})
+
+    if not gender:
+        gender = "girls" if "girls" in genders else (genders[0] if genders else None)
+    if not sport:
+        sport = "ski" if "ski" in sports else (sports[0] if sports else None)
+    if not division:
+        division = "hs" if "hs" in divisions else (divisions[0] if divisions else None)
+
+    category_races = race_list.get((gender, sport, division), [])
+
+    if not school:
+        school = None
+    if not athlete:
+        athlete = None
+
+    if all_races and not school and not athlete:
+        all_races = False
+
+    if not race_num and not all_races and category_races:
+        race_num = category_races[-1]["seq"]
+
+    # Fetch results
+    results = []
+    if gender and sport and division:
+        if all_races:
+            results = get_race_results(conn, gender, sport, division, school=school, athlete=athlete)
+        elif race_num:
+            results = get_race_results(conn, gender, sport, division, race_num, school=school, athlete=athlete)
+    conn.close()
+
+    # Determine if showing multiple races
+    showing_all = all_races
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    if showing_all:
+        writer.writerow(["race", "place", "first_name", "last_name", "school", "time", "points"])
+        for r in results:
+            if r["status"]:
+                writer.writerow([r["race_seq"], "", r["first_name"], r["last_name"], r["school"], r["status"], ""])
+            else:
+                writer.writerow([r["race_seq"], r["place"] if r["place"] is not None else "", r["first_name"], r["last_name"], r["school"], f"{r['time_seconds']:.2f}" if r["time_seconds"] else "", r["points"]])
+    else:
+        writer.writerow(["place", "first_name", "last_name", "school", "time", "points"])
+        for r in results:
+            if r["status"]:
+                writer.writerow(["", r["first_name"], r["last_name"], r["school"], r["status"], ""])
+            else:
+                writer.writerow([r["place"] if r["place"] is not None else "", r["first_name"], r["last_name"], r["school"], f"{r['time_seconds']:.2f}" if r["time_seconds"] else "", r["points"]])
+
+    # Build descriptive filename
+    parts = [gender, sport, division]
+    if showing_all:
+        parts.append("all_races")
+    elif race_num:
+        parts.append(f"race{race_num}")
+    if school:
+        parts.append(school.replace(" ", "_"))
+    if athlete:
+        # athlete is "First Last" — format as "LAST_First"
+        aparts = athlete.split(" ", 1)
+        if len(aparts) == 2:
+            parts.append(f"{aparts[1].upper()}_{aparts[0]}")
+        else:
+            parts.append(athlete)
+    filename = "_".join(parts) + ".csv"
+
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@app.get("/export/{gender}/{sport}/team")
+def export_team_csv(gender: str, sport: str):
+    if not _validate_params(gender, sport):
+        return HTMLResponse("Invalid parameters", status_code=404)
+    conn = _get_db()
+    teams = get_team_leaderboard(conn, gender, sport)
+    conn.close()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["place", "school", "points"])
+
+    rank = 0
+    for team in teams:
+        is_excluded = team.school.startswith("Bill Crothers")
+        if not is_excluded:
+            rank += 1
+        writer.writerow([rank if not is_excluded else "", team.school, f"{team.total_points:g}"])
+
+    filename = f"{gender}_{sport}_team_championship.csv"
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@app.get("/export/{gender}/{sport}/{division}")
+def export_csv(gender: str, sport: str, division: str):
+    if not _validate_params(gender, sport, division):
+        return HTMLResponse("Invalid parameters", status_code=404)
+    conn = _get_db()
+    athletes = get_individual_leaderboard(conn, gender, sport, division)
+    conn.close()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["place", "first_name", "last_name", "school", "points"])
+
+    for a in athletes:
+        writer.writerow([a["rank"], a["first_name"], a["last_name"], a["school"], a["total_points"]])
+
+    filename = f"{gender}_{sport}_{division}_championship.csv"
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
 @app.get("/{gender}/{sport}", response_class=RedirectResponse)
 def category_redirect(gender: str, sport: str):
     if gender not in VALID_GENDERS or sport not in VALID_SPORTS:
@@ -217,48 +366,6 @@ def api_team_leaderboard(gender: str, sport: str):
     ]
 
 
-@app.get("/export/{gender}/{sport}/{division}")
-def export_csv(gender: str, sport: str, division: str):
-    if not _validate_params(gender, sport, division):
-        return HTMLResponse("Invalid parameters", status_code=404)
-    conn = _get_db()
-    athletes = get_individual_leaderboard(conn, gender, sport, division)
-    conn.close()
-
-    # Determine total number of races from all athletes' results
-    max_race = 0
-    for a in athletes:
-        for r in a["all_results"]:
-            if r["race_number"] > max_race:
-                max_race = r["race_number"]
-
-    # Build CSV in memory
-    output = io.StringIO()
-    writer = csv.writer(output)
-
-    # Header row
-    header = ["place", "first_name", "last_name", "school"]
-    for i in range(1, max_race + 1):
-        header.append(f"race_{i}")
-    header.append("total_points")
-    writer.writerow(header)
-
-    # Data rows
-    for a in athletes:
-        race_points = {r["race_number"]: r["points"] for r in a["all_results"]}
-        row = [a["rank"], a["first_name"], a["last_name"], a["school"]]
-        for i in range(1, max_race + 1):
-            row.append(race_points.get(i, ""))
-        row.append(a["total_points"])
-        writer.writerow(row)
-
-    filename = f"{gender}_{sport}_{division}_individual.csv"
-    output.seek(0)
-    return StreamingResponse(
-        iter([output.getvalue()]),
-        media_type="text/csv",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-    )
 
 
 @app.get("/api/individual/{gender}/{sport}/{division}")
