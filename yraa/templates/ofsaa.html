@@ -86,5 +86,6 @@
 <p><small>
     OFSAA qualifier event{{ 's' if ofsaa_dates|length > 1 }}: {% for sport, date in ofsaa_dates.items() %}{% if not loop.first %}, {% endif %}{{ sport|title }} ({{ date }}){% endfor %}.
 </small></p>
+<p><small><a href="/export/ofsaa?tab={{ tab }}">Export as CSV</a></small></p>
 {% endif %}
 {% endblock %}

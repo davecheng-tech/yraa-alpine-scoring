@@ -313,6 +313,45 @@ def export_csv(gender: str, sport: str, division: str):
     )
 
 
+@app.get("/export/ofsaa")
+def export_ofsaa_csv(tab: str = "hs"):
+    if tab not in ("hs", "open", "team"):
+        tab = "hs"
+    conn = _get_db()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    if tab == "team":
+        writer.writerow(["category", "hs_team", "open_team"])
+        for cat in CATEGORIES:
+            label = f"{cat['gender'].title()} {cat['sport'].title()}"
+            hs = get_ofsaa_qualifiers(conn, cat["gender"], cat["sport"], "hs")
+            op = get_ofsaa_qualifiers(conn, cat["gender"], cat["sport"], "open")
+            hs_val = hs["team"][0]["school"] if hs["team"] else ""
+            op_val = op["team"][0]["school"] if op["team"] else ""
+            writer.writerow([label, hs_val, op_val])
+    else:
+        writer.writerow(["category", "first_name", "last_name", "school"])
+        for cat in CATEGORIES:
+            label = f"{cat['gender'].title()} {cat['sport'].title()}"
+            data = get_ofsaa_qualifiers(conn, cat["gender"], cat["sport"], tab)
+            if data["individual"]:
+                ind = data["individual"][0]
+                writer.writerow([label, ind["first_name"], ind["last_name"], ind["school"]])
+            else:
+                writer.writerow([label, "", "", ""])
+
+    conn.close()
+    filename = f"ofsaa_qualifiers_{tab}.csv"
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
 @app.get("/ofsaa", response_class=HTMLResponse)
 def ofsaa_page(request: Request, tab: str = "hs"):
     if tab not in ("hs", "open", "team"):
