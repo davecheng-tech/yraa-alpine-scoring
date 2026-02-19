@@ -273,12 +273,8 @@ def export_team_csv(gender: str, sport: str):
     writer = csv.writer(output)
     writer.writerow(["place", "school", "points"])
 
-    rank = 0
     for team in teams:
-        is_excluded = team.school.startswith("Bill Crothers")
-        if not is_excluded:
-            rank += 1
-        writer.writerow([rank if not is_excluded else "", team.school, f"{team.total_points:g}"])
+        writer.writerow([team.rank if team.rank > 0 else "", team.school, f"{team.total_points:g}"])
 
     filename = f"{gender}_{sport}_team_championship.csv"
     output.seek(0)
@@ -431,7 +427,7 @@ def api_team_leaderboard(gender: str, sport: str):
     conn.close()
     return [
         {
-            "rank": i + 1,
+            "rank": t.rank,
             "school": t.school,
             "total_points": t.total_points,
             "contributing_scores": [
@@ -439,7 +435,7 @@ def api_team_leaderboard(gender: str, sport: str):
                 for s in t.contributing_scores
             ],
         }
-        for i, t in enumerate(teams)
+        for t in teams
     ]
 
 

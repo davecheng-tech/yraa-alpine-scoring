@@ -59,4 +59,21 @@ def calculate_team_scores(results: List[RaceResult]) -> List[TeamScore]:
     team_scores = [t for t in team_scores if t.total_points > 0]
     team_scores.sort(key=lambda t: t.total_points, reverse=True)
 
+    # Assign ranks with skip-on-tie (tied teams share the same rank)
+    # Bill Crothers is excluded from team ranking per Section 7
+    pos = 0
+    prev_points = None
+    prev_rank = 0
+    for t in team_scores:
+        if t.school.startswith("Bill Crothers"):
+            t.rank = 0  # excluded
+            continue
+        pos += 1
+        if prev_points is not None and t.total_points == prev_points:
+            t.rank = prev_rank
+        else:
+            t.rank = pos
+        prev_points = t.total_points
+        prev_rank = t.rank
+
     return team_scores

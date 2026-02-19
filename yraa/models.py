@@ -24,3 +24,4 @@ class TeamScore:
     school: str
     total_points: float
     contributing_scores: List[ContributingScore]
+    rank: int = 0

@@ -23,12 +23,12 @@
         </tr>
     </thead>
     <tbody>
-        {% set ns = namespace(rank=0, has_excluded=false) %}
+        {% set ns = namespace(has_excluded=false) %}
         {% for team in teams %}
-        {% set is_excluded = team.school.startswith("Bill Crothers") %}
+        {% set is_excluded = (team.rank == 0) %}
         {% if is_excluded %}{% set ns.has_excluded = true %}{% endif %}
         <tr>
-            <td class="rank">{% if not is_excluded %}{% set ns.rank = ns.rank + 1 %}{% if ns.rank in [1,2,3] %}<span class="medal {{ {1:'medal-gold',2:'medal-silver',3:'medal-bronze'}[ns.rank] }}">{{ ns.rank }}</span>{% else %}{{ ns.rank }}{% endif %}{% endif %}</td>
+            <td class="rank">{% if not is_excluded %}{% if team.rank in [1,2,3] %}<span class="medal {{ {1:'medal-gold',2:'medal-silver',3:'medal-bronze'}[team.rank] }}">{{ team.rank }}</span>{% else %}{{ team.rank }}{% endif %}{% endif %}</td>
             <td>{{ team.school }}</td>
             <td class="points points-clickable" onclick="showDetail('team-{{ loop.index }}')">{{ '%g' % team.total_points }}</td>
         </tr>
