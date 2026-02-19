@@ -129,7 +129,18 @@ YRAA sends athletes to OFSAA (Ontario provincial competition) based on results f
 
 **Team scoring:** Teams need 3+ finishers in both runs. Score = sum of top 3 placements from each run (6 total). Lowest score wins. Tiebreak: sum of times for those 6 athletes.
 
-**Individual scoring:** Athletes must finish both runs. Score = run 1 place + run 2 place. Lowest wins. Tiebreak: total time across both runs. Athletes on the winning team are excluded — the top individual qualifier is the best finisher not on the qualifying team.
+**Individual scoring:** Athletes must finish both runs. Score = run 1 place + run 2 place. Lowest wins. Tiebreak: total time across both runs. Athletes from qualifying team(s) are excluded from individual qualification.
+
+**Qualifier slots differ by sport:**
+
+| Sport | Division | Teams | Individuals |
+|-------|----------|-------|-------------|
+| Ski | HS | 1 | 1 |
+| Ski | Open | 1 | 1 |
+| Snowboard | HS | 4 | 3 |
+| Snowboard | Open | — | 5 |
+
+For ski, individuals from the winning team are excluded. For snowboard HS, individuals from all 4 qualifying teams are excluded. For snowboard Open, there is no team qualification and no individual exclusions apply.
 
 The `/ofsaa` page has three tabs: HS (individual), Open (individual), and Team. Each shows qualifiers across all four categories (Girls Ski, Boys Ski, Girls Snowboard, Boys Snowboard).
 
