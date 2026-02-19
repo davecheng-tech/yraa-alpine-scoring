@@ -31,16 +31,18 @@
                 {% if not hs_data or not hs_data.event_date %}
                     —
                 {% elif hs_data.team %}
-                    {{ hs_data.team[0].school }}
+                    {% for t in hs_data.team %}{% if not loop.first %}<br>{% endif %}{{ t.school }}{% endfor %}
                 {% else %}
                     <em>No eligible team</em>
                 {% endif %}
             </td>
             <td>
-                {% if not open_data or not open_data.event_date %}
+                {% if open_data and open_data.team_slots == 0 %}
+                    —
+                {% elif not open_data or not open_data.event_date %}
                     —
                 {% elif open_data.team %}
-                    {{ open_data.team[0].school }}
+                    {% for t in open_data.team %}{% if not loop.first %}<br>{% endif %}{{ t.school }}{% endfor %}
                 {% else %}
                     <em>No eligible team</em>
                 {% endif %}
@@ -69,8 +71,8 @@
                 <td>—</td>
                 <td></td>
             {% elif data.individual %}
-                <td>{{ data.individual[0].first_name }} {{ data.individual[0].last_name|upper }}</td>
-                <td>{{ data.individual[0].school }}</td>
+                <td>{% for ind in data.individual %}{% if not loop.first %}<br>{% endif %}{{ ind.first_name }} {{ ind.last_name|upper }}{% endfor %}</td>
+                <td>{% for ind in data.individual %}{% if not loop.first %}<br>{% endif %}{{ ind.school }}{% endfor %}</td>
             {% else %}
                 <td><em>No eligible individual</em></td>
                 <td></td>

@@ -1,6 +1,12 @@
 from collections import defaultdict
 from .db import get_ofsaa_race_results, get_ofsaa_event
 
+# Number of qualifying team/individual slots per sport and division
+OFSAA_SLOTS = {
+    "ski":       {"hs": {"teams": 1, "individuals": 1}, "open": {"teams": 1, "individuals": 1}},
+    "snowboard": {"hs": {"teams": 4, "individuals": 3}, "open": {"teams": 0, "individuals": 5}},
+}
+
 
 def calculate_ofsaa_team(run1_results, run2_results):
     """Calculate OFSAA team scores from two runs.
@@ -64,11 +70,11 @@ def calculate_ofsaa_team(run1_results, run2_results):
     return teams
 
 
-def calculate_ofsaa_individual(run1_results, run2_results, winning_team_school=None):
+def calculate_ofsaa_individual(run1_results, run2_results, excluded_schools=None):
     """Calculate OFSAA individual qualifiers from two runs.
 
-    Athletes must finish both runs. Those from the winning team are excluded.
-    Score = run1_place + run2_place. Lowest wins.
+    Athletes must finish both runs. Those from excluded schools (qualifying
+    teams) are excluded. Score = run1_place + run2_place. Lowest wins.
     Tiebreak: total time across both runs.
 
     Returns list of dicts sorted by rank (ascending combined score).
@@ -90,8 +96,8 @@ def calculate_ofsaa_individual(run1_results, run2_results, winning_team_school=N
         if not r2:
             continue
 
-        # Exclude athletes from winning team
-        if winning_team_school and r1["school"] == winning_team_school:
+        # Exclude athletes from qualifying teams
+        if excluded_schools and r1["school"] in excluded_schools:
             continue
 
         combined = r1["place"] + r2["place"]
@@ -124,23 +130,42 @@ def calculate_ofsaa_individual(run1_results, run2_results, winning_team_school=N
 def get_ofsaa_qualifiers(conn, gender, sport, division):
     """Get OFSAA qualifier results for a gender/sport/division.
 
-    Returns dict with event_date, team, individual, has_data.
+    Returns dict with event_date, team, individual, has_data,
+    team_slots, and individual_slots.
     """
+    slots = OFSAA_SLOTS.get(sport, {}).get(division, {"teams": 1, "individuals": 1})
+    num_team_slots = slots["teams"]
+    num_ind_slots = slots["individuals"]
+    empty = {
+        "event_date": None, "team": [], "individual": [],
+        "has_data": False, "team_slots": num_team_slots, "individual_slots": num_ind_slots,
+    }
+
     event = get_ofsaa_event(conn, sport)
     if not event:
-        return {"event_date": None, "team": [], "individual": [], "has_data": False}
+        return empty
 
     run1, run2 = get_ofsaa_race_results(conn, gender, sport, division)
     if run1 is None or run2 is None:
-        return {"event_date": event["event_date"], "team": [], "individual": [], "has_data": False}
+        return {**empty, "event_date": event["event_date"]}
 
-    teams = calculate_ofsaa_team(run1, run2)
-    winning_school = teams[0]["school"] if teams else None
-    individuals = calculate_ofsaa_individual(run1, run2, winning_school)
+    # Calculate teams (skip if no team slots for this sport/division)
+    if num_team_slots > 0:
+        all_teams = calculate_ofsaa_team(run1, run2)
+        qualifying_teams = all_teams[:num_team_slots]
+        excluded_schools = {t["school"] for t in qualifying_teams}
+    else:
+        qualifying_teams = []
+        excluded_schools = None
+
+    individuals = calculate_ofsaa_individual(run1, run2, excluded_schools)
+    qualifying_individuals = individuals[:num_ind_slots]
 
     return {
         "event_date": event["event_date"],
-        "team": teams,
-        "individual": individuals,
+        "team": qualifying_teams,
+        "individual": qualifying_individuals,
         "has_data": True,
+        "team_slots": num_team_slots,
+        "individual_slots": num_ind_slots,
     }

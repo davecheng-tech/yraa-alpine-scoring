@@ -323,22 +323,26 @@ def export_ofsaa_csv(tab: str = "hs"):
     writer = csv.writer(output)
 
     if tab == "team":
-        writer.writerow(["category", "hs_team", "open_team"])
+        writer.writerow(["category", "division", "team"])
         for cat in CATEGORIES:
             label = f"{cat['gender'].title()} {cat['sport'].title()}"
-            hs = get_ofsaa_qualifiers(conn, cat["gender"], cat["sport"], "hs")
-            op = get_ofsaa_qualifiers(conn, cat["gender"], cat["sport"], "open")
-            hs_val = hs["team"][0]["school"] if hs["team"] else ""
-            op_val = op["team"][0]["school"] if op["team"] else ""
-            writer.writerow([label, hs_val, op_val])
+            for div in ("hs", "open"):
+                data = get_ofsaa_qualifiers(conn, cat["gender"], cat["sport"], div)
+                if data["team_slots"] == 0:
+                    continue
+                if data["team"]:
+                    for t in data["team"]:
+                        writer.writerow([label, div.upper(), t["school"]])
+                else:
+                    writer.writerow([label, div.upper(), ""])
     else:
         writer.writerow(["category", "first_name", "last_name", "school"])
         for cat in CATEGORIES:
             label = f"{cat['gender'].title()} {cat['sport'].title()}"
             data = get_ofsaa_qualifiers(conn, cat["gender"], cat["sport"], tab)
             if data["individual"]:
-                ind = data["individual"][0]
-                writer.writerow([label, ind["first_name"], ind["last_name"], ind["school"]])
+                for ind in data["individual"]:
+                    writer.writerow([label, ind["first_name"], ind["last_name"], ind["school"]])
             else:
                 writer.writerow([label, "", "", ""])
 

@@ -52,7 +52,11 @@ Key modules in `yraa/`:
 - **Individual**: Top 3 race results (or top 4 if ≥6 races), per division
 - **Individual tiebreakers** (Regulation 4.d.i.h): 1) head-to-head in shared races, 2) best single result then second-best etc., 3) more races. Unresolved ties share rank.
 - Tied places receive identical points. Floating-point scores supported for tie-splits.
-- **OFSAA Qualifiers**: Designated via `-ofsaa` filename suffix. Team: top 3 placements × 2 runs, lowest total wins (tiebreak: sum of times). Individual: run1 + run2 placement, lowest wins (tiebreak: total time); winning team members excluded. Separate OFSAA events per sport (`ofsaa_ski`, `ofsaa_snowboard` columns). Bill Crothers is eligible for OFSAA (no exclusion).
+- **OFSAA Qualifiers**: Designated via `-ofsaa` filename suffix. Separate OFSAA events per sport (`ofsaa_ski`, `ofsaa_snowboard` columns). Bill Crothers is eligible for OFSAA (no exclusion). Qualifier slot counts differ by sport (configured in `OFSAA_SLOTS` in `ofsaa.py`):
+  - **Ski**: 1 team + 1 individual per division (HS and Open). Individuals from winning team excluded.
+  - **Snowboard HS**: 4 teams + 3 individuals. Individuals from all 4 qualifying teams excluded.
+  - **Snowboard Open**: No teams; 5 individuals (no exclusions).
+  - Team scoring: top 3 placements × 2 runs, lowest total wins (tiebreak: sum of times). Need 3+ finishers in both runs. Individual: run1 + run2 placement, lowest wins (tiebreak: total time).
 
 ## Data Directory Structure
 
