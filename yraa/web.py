@@ -332,9 +332,9 @@ def export_ofsaa_csv(tab: str = "hs"):
                     continue
                 if data["team"]:
                     for t in data["team"]:
-                        writer.writerow([label, div.upper(), t["school"]])
+                        writer.writerow([label, "HS" if div == "hs" else "Open", t["school"]])
                 else:
-                    writer.writerow([label, div.upper(), ""])
+                    writer.writerow([label, "HS" if div == "hs" else "Open", ""])
     else:
         writer.writerow(["category", "first_name", "last_name", "school"])
         for cat in CATEGORIES:
